@@ -65,16 +65,31 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
+
 const emit = defineEmits<{
   (e: "update-temp", temp: number, desc: string): void
   (e: "update:temp", v: number): void
   (e: "update:desc", v: string): void
 }>()
 
+/** ===== API base（关键修改） =====
+ * 生产环境从 Cloudflare Pages 注入：
+ *   VITE_API_BASE = https://fishing-man.onrender.com/api/v1
+ * 开发环境回退到本地：
+ *   http://localhost:8080/api/v1
+ */
+const API_BASE =
+  (window as any).__API_BASE__ || // 
+  (["localhost", "127.0.0.1"].includes(location.hostname)
+    ? "http://localhost:8080/api/v1"                 
+    : "https://fishing-man.onrender.com/api/v1"); 
+
+function joinBase(p: string) {
+  return `${API_BASE.replace(/\/$/, "")}/${p.replace(/^\//, "")}`;
+}
+
 /**
- * Component props with sensible defaults.
- * - Pass initialLat/initialLon to pin a default location (e.g., Melbourne CBD).
- * - Set useGeolocation=true to try browser geolocation first.
+ * 组件 props
  */
 const props = withDefaults(defineProps<{
   title?: string
@@ -103,7 +118,7 @@ const errorMessage = ref("");
 const currentTemp = ref<number | null>(null);
 const currentDesc = ref<string>("");
 const wind = ref<number | null>(null); // km/h
-const pop = ref<number>(0);            // 0..1 (probability of precipitation)
+const pop = ref<number>(0);            // 0..1
 const uvi = ref<number | null>(null);
 const hi = ref<number | null>(null);
 const lo = ref<number | null>(null);
@@ -112,7 +127,6 @@ const tz = ref<string>("");
 /** Risk indicator */
 const riskLevel = ref<"safe" | "caution" | "not">("safe");
 const riskText = ref<string>("Safe");
-/** Human-readable explanation, e.g. "High chance of rain (79%)" */
 const riskReason = ref<string>("");
 
 const locationLabel = ref<string>("");
@@ -135,20 +149,26 @@ const localTime = computed(() => {
 });
 
 /**
- * Call your backend proxy (/api/v1/weather/onecall).
- * Read text first (easier debugging), then parse JSON when content-type is correct.
+ * 后端代理（/api/v1/weather/onecall）
+ * 先读 text 再校验 content-type，避免 HTML 被误当 JSON
  */
 async function fetchOneCall(lat: number, lon: number) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
   try {
-    const url = `/api/v1/weather/onecall?lat=${lat}&lon=${lon}&units=${props.units}&lang=${props.lang}&exclude=${props.exclude}`;
+    const url = joinBase(
+      `/weather/onecall?lat=${lat}&lon=${lon}&units=${props.units}&lang=${props.lang}&exclude=${props.exclude}`
+    );
+
     const res = await fetch(url, {
       signal: ctrl.signal,
-      cache: "no-store",                        // dev: avoid 304/empty body
-      headers: { "Cache-Control": "no-cache" }, // dev: avoid stale caches
+      cache: "no-store",
+      headers: { "Cache-Control": "no-cache" },
     });
+
+    const ct = res.headers.get("content-type") || "";
     const text = await res.text();
+
     if (!res.ok) {
       try {
         const j = JSON.parse(text);
@@ -157,45 +177,27 @@ async function fetchOneCall(lat: number, lon: number) {
         throw new Error(text.slice(0, 160));
       }
     }
+    if (!ct.includes("application/json")) {
+      throw new Error(`Expected JSON, got ${ct}: ${text.slice(0, 120)}`);
+    }
     return JSON.parse(text);
   } finally {
     clearTimeout(timer);
   }
 }
 
-/**
- * Risk logic (English):
- * - Not recommended: wind > 30 km/h (rough waters, safety risk)
- * - Caution: rain probability >= 60% (wet conditions; prepare rain gear and check hour-by-hour)
- * - Safe: otherwise
- * Returns both the level and a human-readable reason for UI.
- */
+/** 风险判定 */
 function computeLevelKmH(wkmh: number | null, p: number) {
   if (wkmh != null && wkmh > 30) {
-    return {
-      level: "not" as const,
-      text: "Not recommended",
-      reason: `Strong winds (${Math.round(wkmh)} km/h)`,
-    };
+    return { level: "not" as const, text: "Not recommended", reason: `Strong winds (${Math.round(wkmh)} km/h)` };
   }
   if (p >= 0.6) {
-    return {
-      level: "caution" as const,
-      text: "Caution",
-      reason: `High chance of rain (${Math.round(p * 100)}%)`,
-    };
+    return { level: "caution" as const, text: "Caution", reason: `High chance of rain (${Math.round(p * 100)}%)` };
   }
-  return {
-    level: "safe" as const,
-    text: "Safe",
-    reason: "",
-  };
+  return { level: "safe" as const, text: "Safe", reason: "" };
 }
 
-/**
- * Load and map weather data.
- * Coordinate source priority: props to geolocation to fallback label.
- */
+/** 主流程 */
 async function loadWeather(lat?: number, lon?: number) {
   state.value = "loading";
   errorMessage.value = "";
@@ -204,7 +206,6 @@ async function loadWeather(lat?: number, lon?: number) {
     let usedLat = lat ?? props.initialLat;
     let usedLon = lon ?? props.initialLon;
 
-    // If initial coords are provided, use them; otherwise try geolocation
     if (usedLat != null && usedLon != null) {
       locationLabel.value = props.fallbackLabel;
     } else if (props.useGeolocation && "geolocation" in navigator) {
@@ -233,7 +234,6 @@ async function loadWeather(lat?: number, lon?: number) {
 
     const oc = await fetchOneCall(usedLat, usedLon);
 
-    // Map fields from One Call 3.0 payload
     const cur = oc?.current || {};
     const d0 = Array.isArray(oc?.daily) ? oc.daily[0] : null;
 
@@ -243,12 +243,12 @@ async function loadWeather(lat?: number, lon?: number) {
       (Array.isArray(cur.weather) && cur.weather[0]?.main) || "-";
 
     if (currentTemp.value != null) {
-        emit("update-temp", currentTemp.value, currentDesc.value)
-        emit("update:temp", currentTemp.value)
-        emit("update:desc", currentDesc.value)
+      emit("update-temp", currentTemp.value, currentDesc.value);
+      emit("update:temp", currentTemp.value);
+      emit("update:desc", currentDesc.value);
     }
 
-    // OpenWeather "metric" wind speed is m/s to convert to km/h
+    // OpenWeather 风速（metric）单位为 m/s，换算为 km/h
     const windMs = typeof cur.wind_speed === "number" ? cur.wind_speed : null;
     wind.value = windMs == null ? null : windMs * 3.6;
 
@@ -260,7 +260,6 @@ async function loadWeather(lat?: number, lon?: number) {
 
     tz.value = oc?.timezone || "Australia/Melbourne";
 
-    // Compute risk + explanation
     const lvl = computeLevelKmH(wind.value, pop.value);
     riskLevel.value = lvl.level;
     riskText.value = lvl.text;
@@ -273,17 +272,17 @@ async function loadWeather(lat?: number, lon?: number) {
   }
 }
 
-/** Manual reload */
+/** 手动刷新 */
 function reload() {
   loadWeather(props.initialLat, props.initialLon);
 }
 
-/** Initial fetch */
+/** 首次加载 */
 onMounted(() => {
   loadWeather(props.initialLat, props.initialLon);
 });
 
-/** Auto-refresh when parent updates initial coords */
+/** 父组件更新初始坐标时自动刷新 */
 watch(() => [props.initialLat, props.initialLon], ([la, lo]) => {
   if (la != null && lo != null) loadWeather(la, lo);
 });
