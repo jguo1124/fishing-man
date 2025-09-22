@@ -1,5 +1,12 @@
 <template>
   <div class="page">
+    <header class="species-hero">
+    <h1 class="species-title">Explore Fish Species &amp; Sustainability Ratings</h1>
+    <p class="species-subtitle">
+      Discover detailed information on different fish species, their habitats, and sustainability status
+      to help you make responsible fishing choices.
+    </p>
+    </header>
     <!-- Filters (keep as-is; zone / radius are just pass-throughs) -->
     <EsToolbar
       class="es-toolbar"
@@ -87,7 +94,7 @@ function normalizeItem(it) {
     conservation_status: it.conservation_status,
     distribution: it.distribution,
     image_url: (it.image_url && it.image_url.trim()) ? it.image_url : FALLBACK_IMG,
-    source: "https://www.environment.vic.gov.au/conserving-threatened-species/threatened-list ",
+    source: "https://www.environment.vic.gov.au/conserving-threatened-species/threatened-list",
   };
 }
 
@@ -199,4 +206,8 @@ onBeforeUnmount(() => {
 }
 .btn:hover { opacity: .9; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
+.species-hero { margin-bottom: 16px; text-align: center; }
+.species-title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
+.species-subtitle { font-size: 15px; color: #475569; margin: 0; line-height: 1.5; max-width: 720px; margin-inline: auto; }
+
 </style>
