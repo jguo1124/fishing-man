@@ -62,9 +62,11 @@ async function loadZones() {
     zones.value = list;
   } catch (e) {
     console.warn("Failed to load zones, use fallback.", e);
-    zones.value = [];
+    zones.value = [
+      { code: "Lake Bullen Merri", area: "South-West / Shipwreck Coast" },
+    ];
   } finally {
-    step.value = 1;
+    step.value = zone.value ? 2 : 1;
   }
 }
 
@@ -133,13 +135,35 @@ function onSpeciesChanged(v) {
   species.value = v; // client-side filter only (no extra request)
 }
 
+function onBack() {
+  if (step.value === 3) {
+    species.value = "";
+    step.value = 2;
+    return;
+  }
+  if (step.value === 2) {
+    onDate.value = "";
+    species.value = "";
+    rawList.value = [];
+    speciesOptions.value = [];
+    step.value = 1;
+    return;
+  }
+}
+
 // Fallback guards to advance steps even if child events are not emitted
 watch(zone, (v) => {
-  step.value = v ? Math.max(step.value, 2) : 1;
-});
-watch(onDate, (v) => {
-  if (zone.value && v) step.value = 3;
-});
+   if (!v) {
+     step.value = 1;
+   } else if (step.value === 1) {
+     step.value = 2;
+   }
+ });
+ watch(onDate, (v) => {
+   if (zone.value && v && step.value === 2) {
+     step.value = 3;
+   }
+ });
 
 const stepPills = computed(() => ([
   { id: 1, label: "Zone", icon: "📍", state: step.value >= 1 ? (step.value > 1 ? "done" : "current") : "todo" },
@@ -156,9 +180,12 @@ onMounted(loadZones);
     <!-- top hero with title and subtitle -->
     <header class="dash-hero wave-bg">
       <div class="dash-hero__inner">
-        <h1>GoPlan Your Fishing</h1>
+        <h1>Plan your trip</h1>
         <p class="subtitle">
           Select a zone and date to view all species; optionally filter by species.
+        </p>
+        <p class="subtitle">
+          Ensure regulations are followed.
         </p>
       </div>
     </header>
@@ -197,6 +224,10 @@ onMounted(loadZones);
         @update:zone="onZoneChanged"
         @update:onDate="onDateChanged"
         @update:species="onSpeciesChanged"
+        @update:hideNoRestrictions="onToggleHideNoRestrictions"
+        @next="onNext"
+        @show="onShow"
+        @back="onBack"
       />
     </div>
 
@@ -225,26 +256,6 @@ onMounted(loadZones);
         No regulations found for {{ zone }} on {{ onDate || "-" }}.
       </div>
     </div>
-    <footer class="dashboard-disclaimer">
-      <p>
-        The regulations presented here are extracted from the
-        <em>Fisheries Regulations 2019 – Schedule 24: Minimum and maximum sizes and catch limits for fish
-        (other than abalone, giant crab, noxious aquatic species, rock lobster, salmonids, scallop and sea urchin)</em>,
-        which can be accessed at
-        <a
-          href="https://classic.austlii.edu.au/au/legis/vic/consol_reg/fr2019219/sch22.html"
-          target="_blank"
-          rel="noopener"
-        >
-          AustLII
-        </a>.
-      </p>
-      <p>
-        GoFish Sustainably operates independently and is not affiliated with, endorsed by, or sponsored by
-        the Victorian Consolidated Regulations or any government body. For the most accurate and
-        up-to-date laws and regulations, please refer to the official website.
-      </p>
-    </footer>
   </section>
 </template>
 
