@@ -23,7 +23,7 @@ It is a deployed and stable version designed for mentors, stakeholders, and end 
 
 ## Usage
 1. Open the deployed site:  
-    [https://9d5e739b.fishing-man.pages.dev/](https://9d5e739b.fishing-man.pages.dev/)  
+    [https://af80e267.fishing-man.pages.dev/species]
 2. Navigate via the top menu:
    - **Dashboard**: Regulations by zone (size, season, limits).  
    - **Species**: Endangered/protected species gallery and table.  
