@@ -2,7 +2,7 @@
   <section class="slogan">
     <div class="container">
       <p class="text">
-        <strong>GOFishing Sustainably:</strong> Your Smart Guide to Legal & Sustainable Fishing
+        <strong>GOFish Sustainably:</strong> Your Smart Guide to Legal & Sustainable Fishing
       </p>
       <button class="cta" @click="goAbout">Learn More</button>
     </div>
