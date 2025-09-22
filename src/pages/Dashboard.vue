@@ -156,7 +156,7 @@ onMounted(loadZones);
     <!-- top hero with title and subtitle -->
     <header class="dash-hero wave-bg">
       <div class="dash-hero__inner">
-        <h1>Regulations Dashboard</h1>
+        <h1>GoPlan Your Fishing</h1>
         <p class="subtitle">
           Select a zone and date to view all species; optionally filter by species.
         </p>

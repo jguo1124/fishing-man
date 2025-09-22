@@ -23,7 +23,7 @@ const props = defineProps({
     default: () => ([
       {
         icon: '📊',
-        title: 'Dashboard',
+        title: 'GoPlan Your Fishing',
         text: 'Quickly access fishing data, regulations, and personal tools in one place.',
         link: '/dashboard'
       },

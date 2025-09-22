@@ -1,13 +1,18 @@
+<!-- src/views/Endangered.vue -->
 <template>
   <div class="page">
-    <header class="species-hero">
-    <h1 class="species-title">Explore Fish Species &amp; Sustainability Ratings</h1>
-    <p class="species-subtitle">
-      Discover detailed information on different fish species, their habitats, and sustainability status
-      to help you make responsible fishing choices.
-    </p>
+    <!-- Hero 区域：与 Dashboard 一模一样 -->
+    <header class="dash-hero wave-bg">
+      <div class="dash-hero__inner">
+        <h1>Explore Fish Species &amp; Sustainability Ratings</h1>
+        <p class="subtitle">
+          Discover detailed information on different fish species, their habitats, and sustainability status
+          to help you make responsible fishing choices.
+        </p>
+      </div>
     </header>
-    <!-- Filters (keep as-is; zone / radius are just pass-throughs) -->
+
+    <!-- Filters (zone / q / radius) -->
     <EsToolbar
       class="es-toolbar"
       :zone="zone"
@@ -40,7 +45,7 @@
         <span v-else-if="reachedEnd">No more results</span>
       </div>
 
-      <!-- Fallback button (some environments may not trigger IntersectionObserver) -->
+      <!-- Fallback button -->
       <div class="load-more">
         <button
           v-if="!reachedEnd && !loading"
@@ -59,7 +64,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import EsToolbar from "@/components/es/EsToolbar.vue";
 import EsSpeciesCard from "@/components/es/EsSpeciesCard.vue";
 
-/* ------- API base handling (keep .env: VITE_API_BASE=http://localhost:8080/api/v1) ------- */
+/* ------- API base handling ------- */
 const RAW_BASE = import.meta.env.VITE_API_BASE || "";
 const API_BASE = RAW_BASE.replace(/\/+$/, "");
 function apiUrl(path) {
@@ -67,24 +72,22 @@ function apiUrl(path) {
   return `${API_BASE}/${p}`;
 }
 
-/* Filters wired to the toolbar; currently only `q` is used */
+/* Filters wired to the toolbar */
 const zone = ref("VIC-BAY");
 const q = ref("");
 const radiusKm = ref(50);
-const status = ref(""); // reserved for future
+const status = ref("");
 
 /* Paging state */
-const page = ref(0);          // 0-based in UI
+const page = ref(0);
 const pageSize = ref(12);
 const totalPages = ref(0);
 const items = ref([]);
 const loading = ref(false);
 
-/* Map backend item -> card props (NOTE: field names align with your table now) */
-const itemsSafe = computed(() =>
-  Array.isArray(items.value) ? items.value.map(normalizeItem) : []
-);
-const FALLBACK_IMG = "https://www.eftta.com/fileadmin/user_upload/FISHPROTECT_white__2.jpg";
+/* Map backend item -> card props */
+const FALLBACK_IMG =
+  "https://www.eftta.com/fileadmin/user_upload/FISHPROTECT_white__2.jpg";
 
 function normalizeItem(it) {
   return {
@@ -93,32 +96,36 @@ function normalizeItem(it) {
     scientific_name: it.scientific_name,
     conservation_status: it.conservation_status,
     distribution: it.distribution,
-    image_url: (it.image_url && it.image_url.trim()) ? it.image_url : FALLBACK_IMG,
-    source: "https://www.environment.vic.gov.au/conserving-threatened-species/threatened-list",
+    image_url:
+      it.image_url && it.image_url.trim() ? it.image_url : FALLBACK_IMG,
+    source:
+      "https://www.environment.vic.gov.au/conserving-threatened-species/threatened-list",
   };
 }
 
+const itemsSafe = computed(() =>
+  Array.isArray(items.value) ? items.value.map(normalizeItem) : []
+);
 
-const reachedEnd = computed(() =>
-  totalPages.value > 0 && page.value >= totalPages.value - 1
+const reachedEnd = computed(
+  () => totalPages.value > 0 && page.value >= totalPages.value - 1
 );
 
 const sentinel = ref(null);
 const wrapEl = ref(null);
 let observer;
 
-/* Fetch one page (append=true for infinite scroll) */
+/* Fetch one page */
 async function fetchPage({ append = false } = {}) {
   loading.value = true;
   try {
     const params = new URLSearchParams({
-      page: String(page.value + 1),  // backend expects 1-based page
+      page: String(page.value + 1),
       pageSize: String(pageSize.value),
     });
     if (q.value) params.set("q", q.value);
     if (status.value) params.set("status", status.value);
 
-    // Important: do not prepend /api/v1 again, apiUrl() already joins with VITE_API_BASE
     const res = await fetch(apiUrl(`protected/species?${params.toString()}`));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -143,7 +150,7 @@ async function fetchPage({ append = false } = {}) {
   }
 }
 
-/* Apply filters -> reset paging and refetch */
+/* Apply filters */
 async function onApply(payload) {
   if (payload?.zone !== undefined) zone.value = payload.zone;
   if (payload?.q !== undefined) q.value = payload.q;
@@ -154,7 +161,7 @@ async function onApply(payload) {
   wrapEl.value?.scrollTo?.({ top: 0, behavior: "smooth" });
 }
 
-/* Infinite scroll: next page */
+/* Infinite scroll */
 async function loadNextPage() {
   if (loading.value || reachedEnd.value) return;
   page.value += 1;
@@ -163,9 +170,12 @@ async function loadNextPage() {
 
 function setupObserver() {
   if (!("IntersectionObserver" in window)) return;
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => entry.isIntersecting && loadNextPage());
-  }, { root: wrapEl.value || null, rootMargin: "200px 0px", threshold: 0 });
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => entry.isIntersecting && loadNextPage());
+    },
+    { root: wrapEl.value || null, rootMargin: "200px 0px", threshold: 0 }
+  );
   if (sentinel.value) observer.observe(sentinel.value);
 }
 
@@ -181,8 +191,17 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.page { padding: 16px; background: #f7fafc; min-height: 100vh; color: #0f172a; }
-.list-wrap { position: relative; max-height: calc(100vh - 120px); overflow: auto; }
+.page {
+  padding: 16px;
+  background: #f7fafc;
+  min-height: 100vh;
+  color: #0f172a;
+}
+.list-wrap {
+  position: relative;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+}
 
 /* Grid */
 .grid {
@@ -191,23 +210,97 @@ onBeforeUnmount(() => {
   margin-top: 14px;
   grid-template-columns: repeat(5, 1fr);
 }
-@media (max-width: 1280px) { .grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 980px)  { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 720px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px)  { .grid { grid-template-columns: 1fr; } }
-
-.empty { text-align: center; padding: 16px; color: #475569; }
-.sentinel { display: flex; justify-content: center; padding: 16px 0; color: #64748b; }
-.load-more { display: flex; justify-content: center; padding-bottom: 20px; }
-.btn {
-  background: #0d9bb5; color: #fff; border: none;
-  border-radius: 8px; padding: 8px 14px; cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,.08);
+@media (max-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
-.btn:hover { opacity: .9; }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.species-hero { margin-bottom: 16px; text-align: center; }
-.species-title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
-.species-subtitle { font-size: 15px; color: #475569; margin: 0; line-height: 1.5; max-width: 720px; margin-inline: auto; }
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 
+.empty {
+  text-align: center;
+  padding: 16px;
+  color: #475569;
+}
+.sentinel {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  color: #64748b;
+}
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+.btn {
+  background: #0d9bb5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.btn:hover {
+  opacity: 0.9;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Reuse dashboard hero styles */
+.dash-hero {
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin: 0 0 10px;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dash-hero__inner {
+  max-width: 880px;
+  margin: 0 auto;
+}
+.wave-bg {
+  background: radial-gradient(
+      120% 60% at 50% 0%,
+      rgba(59, 130, 246, 0.12) 0%,
+      rgba(59, 130, 246, 0) 60%
+    ),
+    repeating-linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.08) 0 10px,
+      rgba(59, 130, 246, 0) 10px 26px
+    );
+}
+.dash-hero h1 {
+  font-size: clamp(22px, 3.4vw, 28px);
+  font-weight: 800;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: #0f172a;
+}
+.subtitle {
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 65ch;
+  font-size: clamp(13px, 1.4vw, 15px);
+}
 </style>
