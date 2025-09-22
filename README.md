@@ -17,7 +17,7 @@ It is a deployed and stable version designed for mentors, stakeholders, and end 
 
 ## Deployment
 - **Frontend (Cloudflare Pages):**  
-  [https://9d5e739b.fishing-man.pages.dev/](https://9d5e739b.fishing-man.pages.dev/)  
+  [https://af80e267.fishing-man.pages.dev/species]  
 - **Backend (Render):**  
   [https://fishing-man.onrender.com](https://fishing-man.onrender.com)
 
