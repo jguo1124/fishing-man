@@ -225,6 +225,26 @@ onMounted(loadZones);
         No regulations found for {{ zone }} on {{ onDate || "-" }}.
       </div>
     </div>
+    <footer class="dashboard-disclaimer">
+      <p>
+        The regulations presented here are extracted from the
+        <em>Fisheries Regulations 2019 – Schedule 24: Minimum and maximum sizes and catch limits for fish
+        (other than abalone, giant crab, noxious aquatic species, rock lobster, salmonids, scallop and sea urchin)</em>,
+        which can be accessed at
+        <a
+          href="https://classic.austlii.edu.au/au/legis/vic/consol_reg/fr2019219/sch22.html"
+          target="_blank"
+          rel="noopener"
+        >
+          AustLII
+        </a>.
+      </p>
+      <p>
+        GoFish Sustainably operates independently and is not affiliated with, endorsed by, or sponsored by
+        the Victorian Consolidated Regulations or any government body. For the most accurate and
+        up-to-date laws and regulations, please refer to the official website.
+      </p>
+    </footer>
   </section>
 </template>
 
