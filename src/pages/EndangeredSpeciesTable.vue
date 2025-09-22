@@ -196,6 +196,8 @@ onBeforeUnmount(() => {
   background: #f7fafc;
   min-height: 100vh;
   color: #0f172a;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+               Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 .list-wrap {
   position: relative;
