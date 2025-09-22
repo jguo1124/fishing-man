@@ -17,13 +17,13 @@ It is a deployed and stable version designed for mentors, stakeholders, and end 
 
 ## Deployment
 - **Frontend (Cloudflare Pages):**  
-  [https://af80e267.fishing-man.pages.dev/species]  
+  [https://0eeb99a3.fishing-man.pages.dev/]  
 - **Backend (Render):**  
   [https://fishing-man.onrender.com](https://fishing-man.onrender.com)
 
 ## Usage
 1. Open the deployed site:  
-    [https://af80e267.fishing-man.pages.dev/species]
+    [https://0eeb99a3.fishing-man.pages.dev/]
 2. Navigate via the top menu:
    - **Dashboard**: Regulations by zone (size, season, limits).  
    - **Species**: Endangered/protected species gallery and table.  
