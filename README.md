@@ -28,7 +28,11 @@ It is a deployed and stable version designed for mentors, stakeholders, and end 
    - **Dashboard**: Regulations by zone (size, season, limits).  
    - **Species**: Endangered/protected species gallery and table.  
    - **Weather**: Click the weather icon to open the popup.  
-   - **About**: Project mission and sustainability goals.  
+   - **About**: Project mission and sustainability goals.
+
+## Version control 
+1. iteration 1: [https://899ef6a5.fishing-man.pages.dev/]
+2. iteration 2: [https://0eeb99a3.fishing-man.pages.dev/]
 
 ## Tech Stack
 - **Frontend:** Vue 3 + Bootstrap 5  
