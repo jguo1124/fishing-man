@@ -24,6 +24,8 @@ const errorMsg = ref("");
 /** API response shape: { endangered:[], invasive:[], general:[] } */
 const groups = ref(null);
 
+const showInvasiveInfo = ref(false)
+
 /* ---------- loaders ---------- */
 async function loadZones() {
   try {
@@ -105,7 +107,7 @@ const stepPills = computed(() => ([
   { id: 3, label: "Results", icon: "🐟", state: step.value >= 3 ? "current" : "todo" },
 ]));
 
-/* ---------- adapters (map API row → RegCard item) ---------- */
+/* ---------- adapters (map API row  RegCard item) ---------- */
 function toRegCardItem(sp, zoneCode, onDateStr) {
   return {
     species: { code: sp.species, common_name: sp.species },
@@ -157,7 +159,7 @@ const cardsGeneral = computed(() =>
 /** (Endangered / Invasive use EsSpeciesCard) */
 const FALLBACK_IMG = "https://www.eftta.com/fileadmin/user_upload/FISHPROTECT_white__2.jpg";
 
-/* Endangered → image-card props */
+/* Endangered  image-card props */
 const endangeredImageItems = computed(() =>
   (groups.value?.endangered || []).map(sp => ({
     species_code: sp.species,
@@ -170,7 +172,7 @@ const endangeredImageItems = computed(() =>
   }))
 );
 
-/* Invasive → image-card props */
+/* Invasive  image-card props */
 const invasiveImageItems = computed(() =>
   (groups.value?.invasive || []).map(sp => ({
     species_code: sp.species,
@@ -315,7 +317,46 @@ function onClearAll() {
         <section class="band band--full warning">
           <div class="band__head">
             <span class="dot yellow"></span>
-            <h3>Invasive ({{ filteredInvasiveImg.length }})</h3>
+            <h3 class="has-tooltip">
+              Invasive ({{ filteredInvasiveImg.length }})
+              <button
+                class="info-btn"
+                @click="showInvasiveInfo = !showInvasiveInfo"
+                aria-label="What are Invasive Species?"
+              >
+                ?
+              </button>
+            </h3>
+          </div>
+
+          <div v-if="showInvasiveInfo" class="tooltip-box">
+            <h4>What are Invasive Species?</h4>
+            <p>
+              Invasive species are non-native species that are introduced to the environment without proper
+              research on how it would affect the ecosystem. This usually ends in them spreading rapidly and
+              causing harm to the ecosystem they have been inserted into.
+            </p>
+            <p>
+              There are a few aquatic invasive species that are present in Victorian fishing waters. Per
+              government regulations, if you were to spot them, these are the actions you should undertake:
+            </p>
+            <ul>
+              <li>Humanely kill them and do not return them to the water.</li>
+              <li>Dispose of the fish outside of the water and do not use them as bait.</li>
+              <li>
+                Report any sightings of invasive species to
+                <a href="mailto:enforcement@vfa.vic.gov.au">enforcement@vfa.vic.gov.au</a>
+              </li>
+            </ul>
+            <p>
+              Further information can be found
+              <a
+                href="https://vfa.vic.gov.au/operational-policy/pests-and-diseases/noxious-aquatic-species-in-victoria"
+                target="_blank"
+                rel="noopener noreferrer"
+              >here</a
+              >.
+            </p>
           </div>
           <div class="grid-cards">
             <EsSpeciesCard v-for="sp in filteredInvasiveImg" :key="sp.species_code" :sp="sp" />
@@ -530,5 +571,56 @@ function onClearAll() {
   .dash-hero h1 { font-size: 18px; }
   .pills__label { font-size: 13px; }
   .pager .btn { min-width: 100%; } 
+}
+
+.info-btn {
+  margin-left: 8px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.info-btn:hover {
+  background: #fcd34d;
+  color: #78350f;
+  transform: translateY(-1px);
+}
+
+.tooltip-box {
+  position: relative;
+  background: #fff8e1;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 10px 0 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  color: #4b5563;
+  max-width: 1200px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.tooltip-box h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #78350f;
+}
+.tooltip-box a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+.tooltip-box ul {
+  margin: 6px 0 6px 18px;
+  list-style: disc;
+}
+.tooltip-box li {
+  margin-bottom: 4px;
 }
 </style>
