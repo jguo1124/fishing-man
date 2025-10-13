@@ -1,0 +1,23 @@
+/* Import Open Sans from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+/* Apply globally */
+html, body, #app, * {
+  font-family: 'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+:root {
+  --padding: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Open Sans', system-ui, sans-serif;
+  background-color: #fff;
+  color: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+  max-width: 100%;
+}
