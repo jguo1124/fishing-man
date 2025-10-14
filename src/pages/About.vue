@@ -11,6 +11,18 @@
       <div class="hero__stripe" aria-hidden="true"></div>
     </section>
 
+    <!-- Hero image -->
+    <section class="section container media-card">
+      <figure class="hero-media">
+        <img
+          src="@/assets/hero-sea.jpeg"
+          alt="Recreational fishing on calm blue waters"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+    </section>
+
     <!-- Who we are -->
     <section class="section container is-split">
       <div class="col left">
@@ -186,7 +198,6 @@
 }
 
 /* ===== Sections ===== */
-.section{ padding: var(--space-xl,72px) 0; }        /* keep your spacing scale */
 .section.is-slim{ padding: var(--space-lg,48px) 0; }
 .section-title{ margin:0 0 .4rem; font-size:1.75rem; font-weight:800; letter-spacing:-.01em; }
 .section-subtitle{ margin:0; color:var(--muted); line-height:1.75; }
@@ -262,7 +273,6 @@
 
 .section{ padding: 0; }
 
-
 .section.container:not(.is-callout){
   background:#fff;
   border:1px solid #e1edf7;               
@@ -286,4 +296,35 @@
 .cards-4, .cards-3{ gap:18px; }
 
 .is-split .left, .is-split .right{ min-width: 0; }
+
+.media-card{ padding: 0; } 
+.hero-media{
+  margin:0;
+  padding: 10px 14px;              
+}
+.hero-media img{
+  display:block; width:100%; height:auto;
+  border-radius:14px;
+  border:1px solid #e1edf7;
+  box-shadow: 0 10px 22px rgba(26,108,152,.08);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background:#f8fbff;
+}
+.caption{
+  margin-top:6px;
+  font-size:12px; color:#537081; 
+  text-align:right;
+}
+
+@supports not (aspect-ratio: 16 / 9){
+  .hero-media{ position:relative; padding:10px 14px; }
+  .hero-media::before{
+    content:""; display:block; width:100%; padding-top:56.25%;
+    border-radius:16px;
+  }
+  .hero-media img{
+    position:absolute; inset:16px; width:auto; height:auto; max-width:calc(100% - 32px); max-height:calc(100% - 32px);
+  }
+}
 </style>
