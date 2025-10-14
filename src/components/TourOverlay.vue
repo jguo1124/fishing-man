@@ -137,7 +137,6 @@ function measure() {
   const s = current.value
   if (!s) return
 
-  // 不打光，只显示提示
   if (s.noSpotlight) {
     rect.x = rect.y = rect.w = rect.h = 0
     const BW = bubbleWidth.value
@@ -156,7 +155,6 @@ function measure() {
   const el = document.querySelector(s.selector) as HTMLElement | null
 
   if (!el) {
-    // 找不到元素；小屏吸底，桌面居中
     rect.x = rect.y = rect.w = rect.h = 0
     const BW = bubbleWidth.value
     const EST_H = EST_BUBBLE_H
@@ -171,7 +169,6 @@ function measure() {
   }
 
   const r = el.getBoundingClientRect()
-  // 聚光区域
   rect.x = r.left - pad 
   rect.y = r.top  - pad
   rect.w = r.width + pad * 2
@@ -182,14 +179,14 @@ function measure() {
 
   let placed = false
 
-  // 移动端：优先吸底
+  // Mobile: bottom-sheet style (no fit checks)
   if (isMobile.value) {
     bubblePos.top  = window.scrollY + vH - EST_BUBBLE_H - 12
     bubblePos.left = clamp(window.scrollX + (vW - BW)/2, window.scrollX + 12, window.scrollX + vW - BW - 12)
     placed = true
   }
 
-  // 桌面：Right / Left / Bottom / Top 候选
+  // Desktop: try right, left, bottom, top (with fit checks)
   if (!placed) {
     const candidates = [
       { top: r.top + window.scrollY,                left: r.right + window.scrollX + GAP },              // right
@@ -212,7 +209,7 @@ function measure() {
     }
   }
 
-  // 兜底
+
   if (!placed) {
     bubblePos.top  = clamp(r.bottom + window.scrollY + GAP, window.scrollY + 12, window.scrollY + vH - EST_BUBBLE_H - 12)
     bubblePos.left = clamp(r.left + window.scrollX + (r.width - BW)/2, window.scrollX + 12, window.scrollX + vW - BW - 12)
@@ -376,7 +373,6 @@ onBeforeUnmount(() => {
 /* ===== Mobile (<=640px): bottom-sheet style bubble ===== */
 @media (max-width: 640px){
   .tour-bubble.mobile{
-    /* 覆盖内联 top/left/width */
     top: auto !important;
     bottom: max(env(safe-area-inset-bottom), 12px) !important;
     left:  max(env(safe-area-inset-left), 12px) !important;
@@ -387,26 +383,23 @@ onBeforeUnmount(() => {
     padding: 12px 14px;
   }
 
-  /* 触控更友好 */
   .tour-step-title{ font-size: 17px; }
   .tour-step-desc{ font-size: 15px; line-height: 1.55; }
 
   .tour-ctl{
     gap: 10px;
-    flex-wrap: wrap;                     /* 小屏自动换行 */
+    flex-wrap: wrap;                   
   }
   .btn{
-    padding: 10px 14px;                  /* 提高触控热区 */
+    padding: 10px 14px;              
     font-size: 15px;
     border-radius: 12px;
   }
-  .dots{ order: 3; width: 100%; justify-content: center; margin-top: 2px; } /* 点点放到下一行居中 */
+  .dots{ order: 3; width: 100%; justify-content: center; margin-top: 2px; } 
 
-  /* 脉冲高亮在小屏缩小一点，避免太刺眼 */
   .tour-pulse-proxy{ border-radius: 10px; }
 }
 
-/* iOS 刘海屏安全区兜底（即使无 env() 也不会报错） */
 @supports not (padding: max(0px)){
   .tour-bubble.mobile{
     bottom: 12px;
