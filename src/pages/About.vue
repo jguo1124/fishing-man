@@ -135,7 +135,7 @@
 </script>
 
 <style scoped>
-/* ===== Theme & base ===== */
+/* ===== Theme & base (unified with Dashboard / Knowledge Hub) ===== */
 .about{
   --bg:#ffffff;
   --text:#0f172a;
@@ -144,45 +144,55 @@
   --blue:#36ade1;
   --shadow:0 10px 24px rgba(13,155,181,.14);
   --radius:14px;
-  --container:1100px;
 
-  --space-xxl:96px;
-  --space-xl:72px;
-  --space-lg:48px;
-  --space-md:28px;
+  /* Unified page width & background gradient */
+  --container:1040px;
+  --bg-grad: radial-gradient(1200px 600px at 20% -10%, #8ad5ff 0%, transparent 60%),
+    radial-gradient(900px 500px at 80% 0%, #aee8ff 0%, transparent 55%),
+    linear-gradient(180deg, #dff5ff 0%, #f8fdff 100%);
 
-  background:var(--bg);
-  color:var(--text);
+  background: var(--bg-grad);
+  color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
 }
 
 /* ===== Container ===== */
 .container{ max-width:var(--container); margin:0 auto; padding:0 20px; }
 
-/* ===== Hero ===== */
+/* ===== Hero (flat like Dashboard/Knowledge Hub) ===== */
 .hero{
   position:relative;
-  padding: var(--space-xl) 0 var(--space-lg);
-  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 60%);
+  padding: 24px 0 18px;
+  background: transparent;   /* flat: no card background */
   overflow:hidden;
 }
-.hero__inner{ text-align:center; }
-.hero__title{ margin:0; font-size:2.1rem; font-weight:900; letter-spacing:-.01em; }
+.hero__inner{ text-align:left; }
+.hero__title{
+  margin:0 0 6px;
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:-.01em;
+  color:#0b4871;
+}
 .hero__sub{ margin:.5rem 0 0; color:var(--muted); font-size:1.05rem; }
-.hero__stripe{
-  position:absolute; inset:auto 0 0 0; height:10px;
-  background: linear-gradient(90deg, #36ade1, #7fd3f3 60%, #36ade1);
-  opacity:.9;
+
+/* The colored stripe is not needed in the unified flat hero; hide it */
+.hero__stripe{ display:none; }
+
+@media (max-width: 640px){
+  .hero{ padding: 18px 0 12px; }
+  .hero__title{ font-size:24px; }
+  .hero__sub{ font-size:.95rem; }
 }
 
 /* ===== Sections ===== */
-.section{ padding: var(--space-xl) 0; }
-.section.is-slim{ padding: var(--space-lg) 0; }
+.section{ padding: var(--space-xl,72px) 0; }        /* keep your spacing scale */
+.section.is-slim{ padding: var(--space-lg,48px) 0; }
 .section-title{ margin:0 0 .4rem; font-size:1.75rem; font-weight:800; letter-spacing:-.01em; }
 .section-subtitle{ margin:0; color:var(--muted); line-height:1.75; }
 .section-subtitle.wide{ max-width: 68ch; }
 
-/* eyebrow (small label above titles) */
+/* eyebrow (small label above titles) - keep your token but refine to match palette */
 .eyebrow{
   display:inline-block;
   font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
@@ -194,7 +204,7 @@
 /* divider */
 .sep{
   height:1px; background: linear-gradient(90deg, #ffffff, #e7eef6, #ffffff);
-  margin: calc(var(--space-lg) * .7) auto;
+  margin: calc(var(--space-lg,48px) * .7) auto;
 }
 
 /* ===== Split layout ===== */
@@ -238,7 +248,7 @@
 .card p{ margin:0; color:var(--muted); }
 
 /* ===== Callout ===== */
-.is-callout{ padding: var(--space-lg) 0 var(--space-xxl); }
+.is-callout{ padding: var(--space-lg,48px) 0 var(--space-xxl,96px); }
 .callout{
   background: linear-gradient(180deg, #f6fbff 0%, #ffffff 100%);
   border:1px solid #d9edf8; border-radius: var(--radius);
@@ -249,4 +259,31 @@
 /* Normalise first/last child margins */
 .section > :first-child{ margin-top:0; }
 .section > :last-child{ margin-bottom:0; }
+
+.section{ padding: 0; }
+
+
+.section.container:not(.is-callout){
+  background:#fff;
+  border:1px solid #e1edf7;               
+  border-radius:16px;
+  box-shadow: 0 12px 32px rgba(6,24,44,.08);
+  padding:18px 20px 22px;                 
+  margin: 18px auto;                      
+}
+
+.sep{ display:none; }
+
+.section.container.is-callout{
+  padding:0;                              
+  background: transparent;           
+  border:none; box-shadow:none;
+  margin: 18px auto;                        
+}
+
+.callout{ border-radius:16px; }
+
+.cards-4, .cards-3{ gap:18px; }
+
+.is-split .left, .is-split .right{ min-width: 0; }
 </style>

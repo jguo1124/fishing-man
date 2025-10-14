@@ -6,6 +6,7 @@
     <!-- Tooltip bubble (adjacent to target) -->
     <div
       class="tour-bubble shadow"
+      :class="{ mobile: isMobile }"
       :style="{ top: bubblePos.top+'px', left: bubblePos.left+'px', width: bubbleWidth+'px' }"
       role="dialog"
       aria-modal="true"
@@ -41,6 +42,24 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, reactive, ref, watch, computed, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+
+/* ---------- viewport watch for responsive rules ---------- */
+const vw = ref<number>(typeof window !== 'undefined' ? window.innerWidth : 1024)
+const isMobile = computed(() => vw.value <= 640)
+
+const bubbleWidth = computed(() => {
+  const base = props.bubblePx ?? 460
+  if (!isMobile.value) return base
+  const safeLeft  = (window as any)?.visualViewport?.offsetLeft || 0
+  const safeRight = 0
+  const horizontalPadding = 24 + safeLeft + safeRight // 12px * 2 + safe
+  return Math.max(260, Math.min(base, vw.value - horizontalPadding))
+})
+
+function onWinChange() {
+  vw.value = window.innerWidth
+  measure()
+}
 
 type StepRoute = { name?: string; path?: string }
 type Step = {
@@ -79,7 +98,6 @@ const bubbleRef = ref<HTMLDivElement | null>(null)
 const GAP = 10                                             // space between target & bubble
 const EST_BUBBLE_H = 180                                   // estimate height for fit checks
 const PADDING = 10                                         // spotlight padding
-const bubbleWidth = computed(() => props.bubblePx ?? 460)
 
 const router = useRouter()
 const route  = useRoute()
@@ -119,12 +137,18 @@ function measure() {
   const s = current.value
   if (!s) return
 
+  // 不打光，只显示提示
   if (s.noSpotlight) {
     rect.x = rect.y = rect.w = rect.h = 0
     const BW = bubbleWidth.value
     const EST_H = EST_BUBBLE_H
-    bubblePos.top  = window.scrollY + (window.innerHeight - EST_H) / 2
-    bubblePos.left = window.scrollX + (window.innerWidth  - BW)   / 2
+    if (isMobile.value) {
+      bubblePos.top  = window.scrollY + window.innerHeight - EST_H - 12
+      bubblePos.left = clamp(window.scrollX + (window.innerWidth - BW)/2, window.scrollX + 12, window.scrollX + window.innerWidth - BW - 12)
+    } else {
+      bubblePos.top  = window.scrollY + (window.innerHeight - EST_H) / 2
+      bubblePos.left = window.scrollX + (window.innerWidth  - BW)   / 2
+    }
     return
   }
 
@@ -132,55 +156,65 @@ function measure() {
   const el = document.querySelector(s.selector) as HTMLElement | null
 
   if (!el) {
-    rect.x = rect.y = rect.w = rect.h = 0
-    return
-  }
-
-
-  if (s.noSpotlight) {
+    // 找不到元素；小屏吸底，桌面居中
     rect.x = rect.y = rect.w = rect.h = 0
     const BW = bubbleWidth.value
     const EST_H = EST_BUBBLE_H
-    bubblePos.top  = window.scrollY + (window.innerHeight - EST_H) / 2
-    bubblePos.left = window.scrollX + (window.innerWidth  - BW)   / 2
+    if (isMobile.value) {
+      bubblePos.top  = window.scrollY + window.innerHeight - EST_H - 12
+      bubblePos.left = clamp(window.scrollX + (window.innerWidth - BW)/2, window.scrollX + 12, window.scrollX + window.innerWidth - BW - 12)
+    } else {
+      bubblePos.top  = window.scrollY + (window.innerHeight - EST_H) / 2
+      bubblePos.left = window.scrollX + (window.innerWidth  - BW)   / 2
+    }
     return
   }
 
   const r = el.getBoundingClientRect()
-  // spotlight rect in page coordinates
+  // 聚光区域
   rect.x = r.left - pad 
   rect.y = r.top  - pad
   rect.w = r.width + pad * 2
   rect.h = r.height + pad * 2
 
-  // try candidates: Right  Left   Bottom  Top
   const vW = window.innerWidth, vH = window.innerHeight
   const BW = bubbleWidth.value
-  const candidates = [
-    { top: r.top + window.scrollY,                left: r.right + window.scrollX + GAP },              // right
-    { top: r.top + window.scrollY,                left: r.left  + window.scrollX - GAP - BW },         // left
-    { top: r.bottom + window.scrollY + GAP,       left: r.left + window.scrollX + (r.width - BW)/2 },  // bottom
-    { top: r.top + window.scrollY - GAP - EST_BUBBLE_H, left: r.left + window.scrollX + (r.width - BW)/2 } // top
-  ]
 
   let placed = false
-  for (const c of candidates) {
-    let top = c.top
-    let left = c.left
-    left = clamp(left, window.scrollX + 12, window.scrollX + vW - BW - 12)
-    const fitsVertically = top >= window.scrollY && (top + EST_BUBBLE_H) <= (window.scrollY + vH)
-    if (fitsVertically) {
-      const nx = s.nudgeX ?? 0
-      const ny = s.nudgeY ?? 0
-      bubblePos.top = top + 50 + ny
-      bubblePos.left = left + nx
-      placed = true
-      break
+
+  // 移动端：优先吸底
+  if (isMobile.value) {
+    bubblePos.top  = window.scrollY + vH - EST_BUBBLE_H - 12
+    bubblePos.left = clamp(window.scrollX + (vW - BW)/2, window.scrollX + 12, window.scrollX + vW - BW - 12)
+    placed = true
+  }
+
+  // 桌面：Right / Left / Bottom / Top 候选
+  if (!placed) {
+    const candidates = [
+      { top: r.top + window.scrollY,                left: r.right + window.scrollX + GAP },              // right
+      { top: r.top + window.scrollY,                left: r.left  + window.scrollX - GAP - BW },         // left
+      { top: r.bottom + window.scrollY + GAP,       left: r.left + window.scrollX + (r.width - BW)/2 },  // bottom
+      { top: r.top + window.scrollY - GAP - EST_BUBBLE_H, left: r.left + window.scrollX + (r.width - BW)/2 } // top
+    ]
+    for (const c of candidates) {
+      let top = c.top
+      let left = clamp(c.left, window.scrollX + 12, window.scrollX + vW - BW - 12)
+      const fitsVertically = top >= window.scrollY && (top + EST_BUBBLE_H) <= (window.scrollY + vH)
+      if (fitsVertically) {
+        const nx = s.nudgeX ?? 0
+        const ny = s.nudgeY ?? 0
+        bubblePos.top  = top + 50 + ny
+        bubblePos.left = left + nx
+        placed = true
+        break
+      }
     }
   }
+
+  // 兜底
   if (!placed) {
-    // Fallback: place bottom, clamp horizontally; if still off, put at viewport bottom - 12
-    bubblePos.top = clamp(r.bottom + window.scrollY + GAP, window.scrollY + 12, window.scrollY + vH - EST_BUBBLE_H - 12)
+    bubblePos.top  = clamp(r.bottom + window.scrollY + GAP, window.scrollY + 12, window.scrollY + vH - EST_BUBBLE_H - 12)
     bubblePos.left = clamp(r.left + window.scrollX + (r.width - BW)/2, window.scrollX + 12, window.scrollX + vW - BW - 12)
   }
 }
@@ -239,7 +273,6 @@ function close() {
 
 /* ---------- utils ---------- */
 function delay(ms:number) { return new Promise(res => setTimeout(res, ms)) }
-function onWinChange() { measure() }
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') { e.preventDefault(); close(); return }
   if (e.key === 'ArrowRight') { e.preventDefault(); next(); return }
@@ -338,5 +371,47 @@ onBeforeUnmount(() => {
   0%   { box-shadow: 0 0 0 3px rgba(54,173,225, 0.4)}
   70%  { box-shadow: 0 0 0 9px rgba(54,173,225, 0.4)}
   100% { box-shadow: 0 0 0 3px rgba(54,173,225, 0.4)}
+}
+
+/* ===== Mobile (<=640px): bottom-sheet style bubble ===== */
+@media (max-width: 640px){
+  .tour-bubble.mobile{
+    /* 覆盖内联 top/left/width */
+    top: auto !important;
+    bottom: max(env(safe-area-inset-bottom), 12px) !important;
+    left:  max(env(safe-area-inset-left), 12px) !important;
+    right: max(env(safe-area-inset-right), 12px) !important;
+    width: auto !important;
+    max-width: none;
+    border-radius: 16px;
+    padding: 12px 14px;
+  }
+
+  /* 触控更友好 */
+  .tour-step-title{ font-size: 17px; }
+  .tour-step-desc{ font-size: 15px; line-height: 1.55; }
+
+  .tour-ctl{
+    gap: 10px;
+    flex-wrap: wrap;                     /* 小屏自动换行 */
+  }
+  .btn{
+    padding: 10px 14px;                  /* 提高触控热区 */
+    font-size: 15px;
+    border-radius: 12px;
+  }
+  .dots{ order: 3; width: 100%; justify-content: center; margin-top: 2px; } /* 点点放到下一行居中 */
+
+  /* 脉冲高亮在小屏缩小一点，避免太刺眼 */
+  .tour-pulse-proxy{ border-radius: 10px; }
+}
+
+/* iOS 刘海屏安全区兜底（即使无 env() 也不会报错） */
+@supports not (padding: max(0px)){
+  .tour-bubble.mobile{
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+  }
 }
 </style>

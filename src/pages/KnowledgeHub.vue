@@ -1,119 +1,121 @@
 <template>
-  <section class="kh">
-    <!-- gradient background decorations -->
-    <div class="bg-blur a"></div>
-    <div class="bg-blur b"></div>
+  <main class="page page--blue">
+    <section class="kh">
+      <!-- gradient background decorations -->
+      <div class="bg-blur a"></div>
+      <div class="bg-blur b"></div>
 
-    <!-- Header -->
-    <header class="kh-header">
-      <h1 class="kh-title">Knowledge Hub</h1>
-      <p class="kh-sub">News and fishing tutorials to keep you safe and compliant.</p>
+      <!-- Header -->
+      <header class="kh-header">
+        <h1 class="kh-title">Knowledge Hub</h1>
+        <p class="kh-sub">News and fishing tutorials to keep you safe and compliant.</p>
 
-      <!-- Tabs -->
-      <nav class="kh-tabs" role="tablist" aria-label="Sections">
-        <button
-          v-for="t in tabs"
-          :key="t.val"
-          type="button"
-          class="kh-tab"
-          :class="{ active: tab === t.val }"
-          role="tab"
-          :aria-selected="tab === t.val"
-          @click="switchTab(t.val)"
-        >
-          <span class="dot" :data-kind="t.val"></span>{{ t.label }}
-        </button>
-      </nav>
-    </header>
+        <!-- Tabs -->
+        <nav class="kh-tabs" role="tablist" aria-label="Sections">
+          <button
+            v-for="t in tabs"
+            :key="t.val"
+            type="button"
+            class="kh-tab"
+            :class="{ active: tab === t.val }"
+            role="tab"
+            :aria-selected="tab === t.val"
+            @click="switchTab(t.val)"
+          >
+            <span class="dot" :data-kind="t.val"></span>{{ t.label }}
+          </button>
+        </nav>
+      </header>
 
-    <!-- Glass panel -->
-    <div class="kh-panel">
-      <!-- Controls -->
-      <div class="kh-wrap">
-        <div class="kh-search" role="search">
-          <span class="ico" aria-hidden="true">🔎</span>
-          <input
-            v-model.trim="q"
-            type="search"
-            placeholder="Search title..."
-            aria-label="Search by title"
-            @keydown.enter.prevent
-          />
-        </div>
-
-        <select
-          v-if="allTags.length"
-          v-model="tag"
-          class="sel"
-          aria-label="Filter by tag"
-          title="Filter by tag"
-        >
-          <option value="">All tags</option>
-          <option v-for="t in allTags" :key="t" :value="t">{{ t }}</option>
-        </select>
-
-        <span class="label">Order:</span>
-        <select v-model="sort" class="sel" aria-label="Sort by date">
-          <option value="date_desc">Newest → Oldest</option>
-          <option value="date_asc">Oldest → Newest</option>
-        </select>
-
-        
-
-        <span class="label total">Total: {{ total }}</span>
-      </div>
-
-      <!-- Active filters -->
-      <div v-if="q || tag" class="chips">
-        <span v-if="q" class="chip" @click="clearQ" title="Clear search">“{{ q }}” ✕</span>
-        <span v-if="tag" class="chip" @click="tag=''" title="Clear tag">{{ tag }} ✕</span>
-      </div>
-
-      <div class="kh-divider" aria-hidden="true"></div>
-
-      <!-- List -->
-      <div class="kh-list">
-        <!-- Sticky head -->
-        <div class="kc-row kc-head">
-          <div class="col title">{{ tabLabel }}</div>
-          <div class="col date">Date</div>
-          <div class="col source">Source</div>
-        </div>
-
-        <!-- Items -->
-        <KnowledgeCard
-          v-for="it in pagedItems"
-          :key="it.id"
-          :item="it"
-          class="kh-row"
-        />
-
-        <!-- States -->
-        <div v-if="!loading && !error && !pagedItems.length" class="kh-empty">
-          <p class="empty-title">No results</p>
-          <p class="empty-sub">Try clearing filters or using different keywords.</p>
-          <div class="chips">
-            <button v-if="q" class="chip-btn" @click="clearQ">Clear search</button>
-            <button v-if="tag" class="chip-btn" @click="tag=''">Clear tag</button>
+      <!-- Glass panel -->
+      <div class="kh-panel">
+        <!-- Controls -->
+        <div class="kh-wrap">
+          <div class="kh-search" role="search">
+            <span class="ico" aria-hidden="true">🔎</span>
+            <input
+              v-model.trim="q"
+              type="search"
+              placeholder="Search title..."
+              aria-label="Search by title"
+              @keydown.enter.prevent
+            />
           </div>
+
+          <select
+            v-if="allTags.length"
+            v-model="tag"
+            class="sel"
+            aria-label="Filter by tag"
+            title="Filter by tag"
+          >
+            <option value="">All tags</option>
+            <option v-for="t in allTags" :key="t" :value="t">{{ t }}</option>
+          </select>
+
+          <span class="label">Order:</span>
+          <select v-model="sort" class="sel" aria-label="Sort by date">
+            <option value="date_desc">Newest → Oldest</option>
+            <option value="date_asc">Oldest → Newest</option>
+          </select>
+
+          
+
+          <span class="label total">Total: {{ total }}</span>
         </div>
 
-        <div v-if="error" class="kh-alert">
-          <strong>Failed to load:</strong> {{ error }}
-          <button class="retry" @click="load">Retry</button>
+        <!-- Active filters -->
+        <div v-if="q || tag" class="chips">
+          <span v-if="q" class="chip" @click="clearQ" title="Clear search">“{{ q }}” ✕</span>
+          <span v-if="tag" class="chip" @click="tag=''" title="Clear tag">{{ tag }} ✕</span>
         </div>
 
-        <div v-if="loading" class="kh-skel" aria-label="Loading"></div>
-      </div>
+        <div class="kh-divider" aria-hidden="true"></div>
 
-      <!-- Pager -->
-      <div class="kh-pager">
-        <button class="pbtn" :disabled="page <= 1" @click="prevPage">Prev</button>
-        <div class="ppage">Page {{ page }} / {{ totalPages }}</div>
-        <button class="pbtn" :disabled="page >= totalPages" @click="nextPage">Next</button>
+        <!-- List -->
+        <div class="kh-list">
+          <!-- Sticky head -->
+          <div class="kc-row kc-head">
+            <div class="col title">{{ tabLabel }}</div>
+            <div class="col date">Date</div>
+            <div class="col source">Source</div>
+          </div>
+
+          <!-- Items -->
+          <KnowledgeCard
+            v-for="it in pagedItems"
+            :key="it.id"
+            :item="it"
+            class="kh-row"
+          />
+
+          <!-- States -->
+          <div v-if="!loading && !error && !pagedItems.length" class="kh-empty">
+            <p class="empty-title">No results</p>
+            <p class="empty-sub">Try clearing filters or using different keywords.</p>
+            <div class="chips">
+              <button v-if="q" class="chip-btn" @click="clearQ">Clear search</button>
+              <button v-if="tag" class="chip-btn" @click="tag=''">Clear tag</button>
+            </div>
+          </div>
+
+          <div v-if="error" class="kh-alert">
+            <strong>Failed to load:</strong> {{ error }}
+            <button class="retry" @click="load">Retry</button>
+          </div>
+
+          <div v-if="loading" class="kh-skel" aria-label="Loading"></div>
+        </div>
+
+        <!-- Pager -->
+        <div class="kh-pager">
+          <button class="pbtn" :disabled="page <= 1" @click="prevPage">Prev</button>
+          <div class="ppage">Page {{ page }} / {{ totalPages }}</div>
+          <button class="pbtn" :disabled="page >= totalPages" @click="nextPage">Next</button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
 
 <script setup>
@@ -233,27 +235,14 @@ onMounted(() => { document.title = 'GoFish - Knowledge Hub'; load() })
   --muted:#475569;
   --border:#e5e7eb;
   --glass:rgba(255,255,255,.7);
-  --blue:#36ade1;
-  --blue-600:#1282b3;
-  --bg-grad: radial-gradient(1200px 600px at 20% -10%, #CDEBFF 0%, transparent 60%),
-             radial-gradient(900px 500px at 80% 0%, #EAF7FF 0%, transparent 55%),
-             #ffffff;
   position: relative;
-  width: clamp(760px, 70vw, 1040px);
+  width: min(100%, 1040px);
   margin: 0 auto;
   padding: 28px 18px 56px;
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  background: var(--bg-grad);
   overflow: hidden;
 }
-
-/* decorative blobs */
-.bg-blur{
-  position:absolute; filter: blur(70px); opacity:.6; z-index:0; pointer-events:none;
-}
-.bg-blur.a{ width:220px; height:220px; left:-40px; top:60px; background:#b0e4ff; }
-.bg-blur.b{ width:260px; height:260px; right:-60px; top:120px; background:#e5f5ff; }
 
 /* header & tabs */
 .kh-title{ margin:0 0 6px; font-size:32px; font-weight:900; letter-spacing:-.01em; }
@@ -416,4 +405,15 @@ onMounted(() => { document.title = 'GoFish - Knowledge Hub'; load() })
 .pbtn:not(:disabled):active{ transform: translateY(1px) scale(.98); }
 .pbtn:disabled{ opacity:.45; cursor:not-allowed; }
 .ppage{ font-size:13px; color:#6b7a86 }
+
+/* Full-bleed blue background */
+.page.page--blue{
+  --bg-grad-strong:
+    radial-gradient(1200px 600px at 20% -10%, #8ad5ff 0%, transparent 60%),
+    radial-gradient(900px 500px at 80% 0%, #aee8ff 0%, transparent 55%),
+    linear-gradient(180deg, #dff5ff 0%, #f8fdff 100%);
+  background: var(--bg-grad-strong);
+  min-height: 100dvh;
+}
+
 </style>

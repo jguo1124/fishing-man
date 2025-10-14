@@ -246,169 +246,171 @@ function onClearAll() {
 </script>
 
 <template>
-  <section class="dashboard">
-    <!-- Header -->
-    <header class="dash-hero wave-bg">
-      <div class="dash-hero__inner">
-        <h1>GoPlan Your Fishing Journey</h1>
-        <p class="subtitle">
-          Select a zone and date to view endangered (with images), invasive and general species.
-        </p>
+  <main class="page page--blue">
+    <section class="dashboard">
+      <!-- Header -->
+      <header class="dash-hero wave-bg">
+        <div class="dash-hero__inner">
+          <h1>GoPlan Your Fishing Journey</h1>
+          <p class="subtitle">
+            Select a zone and date to view endangered (with images), invasive and general species.
+          </p>
+        </div>
+      </header>
+
+      <!-- Step pills (sticky) + progress bar -->
+      <nav class="pills">
+        <ol class="pills__list">
+          <li v-for="p in stepPills" :key="p.id" class="pills__item" :data-state="p.state">
+            <span class="pills__num"><span>{{ p.id }}</span></span>
+            <span class="pills__icon" aria-hidden="true">{{ p.icon }}</span>
+            <span class="pills__label">{{ p.label }}</span>
+          </li>
+        </ol>
+        <div class="pbar">
+          <div class="pbar__fill" :style="{ width: (Math.min(step,3)/3)*100 + '%' }"></div>
+        </div>
+      </nav>
+
+      <div v-if="errorMsg" class="alert error">{{ errorMsg }}</div>
+
+      <!-- Controls -->
+      <div class="wizard-card">
+        <WizardControls
+          :zones="zones"
+          :zone="zone"
+          :onDate="onDate"
+          :step="step"
+          :loading="loading"
+          :species="species"
+          :speciesOptions="speciesOptions"
+          :speciesLoading="speciesLoading"
+          :key="step"
+          @update:zone="onZoneChanged"
+          @update:onDate="onDateChanged"
+          @update:species="v => (species.value = v)"
+          @back="onBack"
+          @next="onNext"
+          @show="onShow"
+          @clear-all="onClearAll"
+        />
       </div>
-    </header>
 
-    <!-- Step pills (sticky) + progress bar -->
-    <nav class="pills">
-      <ol class="pills__list">
-        <li v-for="p in stepPills" :key="p.id" class="pills__item" :data-state="p.state">
-          <span class="pills__num"><span>{{ p.id }}</span></span>
-          <span class="pills__icon" aria-hidden="true">{{ p.icon }}</span>
-          <span class="pills__label">{{ p.label }}</span>
-        </li>
-      </ol>
-      <div class="pbar">
-        <div class="pbar__fill" :style="{ width: (Math.min(step,3)/3)*100 + '%' }"></div>
-      </div>
-    </nav>
+      <!-- Results -->
+      <div class="results">
+        <h2>Species Regulations</h2>
+        <div v-if="loading" class="skeleton">Loading regulations...</div>
 
-    <div v-if="errorMsg" class="alert error">{{ errorMsg }}</div>
+        <template v-else-if="groups">
+          <!-- Endangered (image cards) -->
+          <section class="band band--full danger">
+            <div class="band__head">
+              <span class="dot red"></span>
+              <h3>Endangered / No-take ({{ filteredEndangered.length }})</h3>
+            </div>
+            <div class="grid-cards">
+              <EsSpeciesCard v-for="sp in filteredEndangered" :key="sp.species_code" :sp="sp" />
+            </div>
+            <div v-if="!filteredEndangered.length" class="empty">No endangered species in this zone.</div>
+          </section>
 
-    <!-- Controls -->
-    <div class="wizard-card">
-      <WizardControls
-        :zones="zones"
-        :zone="zone"
-        :onDate="onDate"
-        :step="step"
-        :loading="loading"
-        :species="species"
-        :speciesOptions="speciesOptions"
-        :speciesLoading="speciesLoading"
-        :key="step"
-        @update:zone="onZoneChanged"
-        @update:onDate="onDateChanged"
-        @update:species="v => (species.value = v)"
-        @back="onBack"
-        @next="onNext"
-        @show="onShow"
-        @clear-all="onClearAll"
-      />
-    </div>
+          <!-- Invasive (image cards) -->
+          <section class="band band--full warning">
+            <div class="band__head">
+              <span class="dot yellow"></span>
+              <h3 class="has-tooltip">
+                Invasive ({{ filteredInvasiveImg.length }})
+                <button
+                  class="info-btn"
+                  @click="showInvasiveInfo = !showInvasiveInfo"
+                  aria-label="What are Invasive Species?"
+                >
+                  ?
+                </button>
+              </h3>
+            </div>
 
-    <!-- Results -->
-    <div class="results">
-      <h2>Species Regulations</h2>
-      <div v-if="loading" class="skeleton">Loading regulations...</div>
+            <div v-if="showInvasiveInfo" class="tooltip-box">
+              <h4>What are Invasive Species?</h4>
+              <p>
+                Invasive species are non-native species that are introduced to the environment without proper
+                research on how it would affect the ecosystem. This usually ends in them spreading rapidly and
+                causing harm to the ecosystem they have been inserted into.
+              </p>
+              <p>
+                There are a few aquatic invasive species that are present in Victorian fishing waters. Per
+                government regulations, if you were to spot them, these are the actions you should undertake:
+              </p>
+              <ul>
+                <li>Humanely kill them and do not return them to the water.</li>
+                <li>Dispose of the fish outside of the water and do not use them as bait.</li>
+                <li>
+                  Report any sightings of invasive species to
+                  <a href="mailto:enforcement@vfa.vic.gov.au">enforcement@vfa.vic.gov.au</a>
+                </li>
+              </ul>
+              <p>
+                Further information can be found
+                <a
+                  href="https://vfa.vic.gov.au/operational-policy/pests-and-diseases/noxious-aquatic-species-in-victoria"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >here</a
+                >.
+              </p>
+            </div>
+            <div class="grid-cards">
+              <EsSpeciesCard v-for="sp in filteredInvasiveImg" :key="sp.species_code" :sp="sp" />
+            </div>
+            <div v-if="!filteredInvasiveImg.length" class="empty">No invasive species in this zone.</div>
+          </section>
 
-      <template v-else-if="groups">
-        <!-- Endangered (image cards) -->
-        <section class="band band--full danger">
-          <div class="band__head">
-            <span class="dot red"></span>
-            <h3>Endangered / No-take ({{ filteredEndangered.length }})</h3>
-          </div>
-          <div class="grid-cards">
-            <EsSpeciesCard v-for="sp in filteredEndangered" :key="sp.species_code" :sp="sp" />
-          </div>
-          <div v-if="!filteredEndangered.length" class="empty">No endangered species in this zone.</div>
-        </section>
-
-        <!-- Invasive (image cards) -->
-        <section class="band band--full warning">
-          <div class="band__head">
-            <span class="dot yellow"></span>
-            <h3 class="has-tooltip">
-              Invasive ({{ filteredInvasiveImg.length }})
+          <!-- General (list cards) -->
+          <section class="band band--full neutral">
+            <div class="band__head">
+              <span class="dot green"></span>
+              <h3>General ({{ filteredGeneral.length }})</h3>
+            </div>
+            <RegList
+              :items="pagedGeneral"
+              :zone="zone"
+              :onDate="onDate"
+              :loading="loading"
+              :hideNoRestrictions="false"
+            />
+            <div v-if="generalTotalPages > 1" class="pager">
               <button
-                class="info-btn"
-                @click="showInvasiveInfo = !showInvasiveInfo"
-                aria-label="What are Invasive Species?"
+                class="btn ghost"
+                :disabled="generalPage <= 1 || loading"
+                @click="generalPage = Math.max(1, generalPage - 1)"
               >
-                ?
+                Previous
               </button>
-            </h3>
-          </div>
 
-          <div v-if="showInvasiveInfo" class="tooltip-box">
-            <h4>What are Invasive Species?</h4>
-            <p>
-              Invasive species are non-native species that are introduced to the environment without proper
-              research on how it would affect the ecosystem. This usually ends in them spreading rapidly and
-              causing harm to the ecosystem they have been inserted into.
-            </p>
-            <p>
-              There are a few aquatic invasive species that are present in Victorian fishing waters. Per
-              government regulations, if you were to spot them, these are the actions you should undertake:
-            </p>
-            <ul>
-              <li>Humanely kill them and do not return them to the water.</li>
-              <li>Dispose of the fish outside of the water and do not use them as bait.</li>
-              <li>
-                Report any sightings of invasive species to
-                <a href="mailto:enforcement@vfa.vic.gov.au">enforcement@vfa.vic.gov.au</a>
-              </li>
-            </ul>
-            <p>
-              Further information can be found
-              <a
-                href="https://vfa.vic.gov.au/operational-policy/pests-and-diseases/noxious-aquatic-species-in-victoria"
-                target="_blank"
-                rel="noopener noreferrer"
-              >here</a
-              >.
-            </p>
-          </div>
-          <div class="grid-cards">
-            <EsSpeciesCard v-for="sp in filteredInvasiveImg" :key="sp.species_code" :sp="sp" />
-          </div>
-          <div v-if="!filteredInvasiveImg.length" class="empty">No invasive species in this zone.</div>
-        </section>
+              <span class="pager-info">
+                Page {{ generalPage }} of {{ generalTotalPages }}
+              </span>
 
-        <!-- General (list cards) -->
-        <section class="band band--full neutral">
-          <div class="band__head">
-            <span class="dot green"></span>
-            <h3>General ({{ filteredGeneral.length }})</h3>
-          </div>
-          <RegList
-            :items="pagedGeneral"
-            :zone="zone"
-            :onDate="onDate"
-            :loading="loading"
-            :hideNoRestrictions="false"
-          />
-          <div v-if="generalTotalPages > 1" class="pager">
-            <button
-              class="btn ghost"
-              :disabled="generalPage <= 1 || loading"
-              @click="generalPage = Math.max(1, generalPage - 1)"
-            >
-              Previous
-            </button>
+              <button
+                class="btn ghost"
+                :disabled="generalPage >= generalTotalPages || loading"
+                @click="generalPage = Math.min(generalTotalPages, generalPage + 1)"
+              >
+                Next
+              </button>
+            </div>
+          </section>
+        </template>
 
-            <span class="pager-info">
-              Page {{ generalPage }} of {{ generalTotalPages }}
-            </span>
-
-            <button
-              class="btn ghost"
-              :disabled="generalPage >= generalTotalPages || loading"
-              @click="generalPage = Math.min(generalTotalPages, generalPage + 1)"
-            >
-              Next
-            </button>
-          </div>
-        </section>
-      </template>
-
-      <div v-else-if="!loading && step < 3" class="empty">
-        Select a zone and date to view regulations.
+        <div v-else-if="!loading && step < 3" class="empty">
+          Select a zone and date to view regulations.
+        </div>
+        <div v-else-if="!loading && step >= 3 && !groups" class="empty">
+          No regulations found for {{ zone }} on {{ onDate || "-" }}.
+        </div>
       </div>
-      <div v-else-if="!loading && step >= 3 && !groups" class="empty">
-        No regulations found for {{ zone }} on {{ onDate || "-" }}.
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
 
 <style scoped>
@@ -438,9 +440,9 @@ function onClearAll() {
   border-radius: 16px;
   padding: 20px 22px;
   margin: 0 0 14px;
-  background: linear-gradient(180deg, #eef7ff, #ffffff);
-  border: 1px solid #d9e7f5;
-  box-shadow: 0 12px 32px rgba(6,24,44,.10);
+  background: transparent; 
+  border: none;
+  box-shadow: none;
 }
 .dash-hero__inner{ max-width: 900px; margin: 0 auto; }
 .dash-hero h1{ margin:0 0 6px; font-size:32px; font-weight:900; letter-spacing:-.01em; color:#0b4871; }
@@ -558,5 +560,18 @@ function onClearAll() {
 }
 @media (prefers-reduced-motion: reduce){
   .pills__item, .pager .btn, .grid-cards > * { transition:none !important; }
+}
+
+.page.page--blue{
+  --bg-grad-strong:
+    radial-gradient(1200px 600px at 20% -10%, #8ad5ff 0%, transparent 60%),
+    radial-gradient(900px 500px at 80% 0%, #aee8ff 0%, transparent 55%),
+    linear-gradient(180deg, #dff5ff 0%, #f8fdff 100%);
+  background: var(--bg-grad-strong);
+  min-height: 100dvh;
+}
+
+.dashboard{
+  background: transparent;  
 }
 </style>
