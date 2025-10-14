@@ -1,5 +1,5 @@
 <template>
-  <section class="hero" role="img" aria-label="Banner">
+  <section class="hero" role="img" aria-label="Banner" data-tour="home-hero">
     <!-- Image only, no text here to match the screenshot -->
   </section>
 </template>

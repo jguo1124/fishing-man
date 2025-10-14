@@ -1,5 +1,5 @@
 <template>
-  <section class="features">
+  <section class="features" data-tour="home-cta">
     <RouterLink
       v-for="(f, i) in features"
       :key="i"
@@ -25,7 +25,7 @@ const props = defineProps({
         icon: '📊',
         title: 'GoPlan',
         text: 'Quickly access fishing data, regulations, and personal tools in one place.',
-        link: '//species/combined'
+        link: { name: 'SpeciesCombined' }
       },
       {
         icon: '🐟',

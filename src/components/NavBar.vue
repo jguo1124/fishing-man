@@ -1,11 +1,11 @@
 <template>
-  <nav class="nav">
+  <nav class="nav" id="app-nav"> 
     <div class="container">
       <ul>
-        <li><RouterLink to="/" exact>Home</RouterLink></li>
-        <li><RouterLink :to="{ name: 'SpeciesCombined' }">GoPlan</RouterLink></li>
-        <li><RouterLink to="/knowledge">Knowledge Hub</RouterLink></li>
-        <li><RouterLink to="/about">About</RouterLink></li>
+        <li><RouterLink to="/" data-tour="nav-home">Home</RouterLink></li>
+        <li><RouterLink :to="{ name: 'SpeciesCombined' }" data-tour="nav-goplan">GoPlan</RouterLink></li>
+        <li><RouterLink to="/knowledge" data-tour="nav-knowledge">Knowledge Hub</RouterLink></li>
+        <li><RouterLink to="/about" data-tour="nav-about">About</RouterLink></li>
       </ul>
     </div>
     <div class="underline"></div>
@@ -30,6 +30,7 @@ ul {
 }
 a {
   color: #fff; text-decoration: none; font-weight: 700;
+  font-size: 18px; 
   background: none; border: 0; cursor: pointer;
   padding: .35rem 0;
 }
