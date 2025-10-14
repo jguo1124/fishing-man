@@ -143,7 +143,8 @@ const iconName = computed(() => {
 
 /* Mobile behavior */
 @media (max-width: 768px){
-  .dock-toggle{ bottom: 14px; top: auto; }
+  .dock-toggle{ bottom: calc(env(safe-area-inset-bottom, 0px) + 50px);
+    top: auto; }
   .dock{
     right: 0; left: 0; margin: 0 auto; bottom: 0; top: auto;
     width: 100%; max-height: 80vh; border-radius: 14px 14px 0 0;

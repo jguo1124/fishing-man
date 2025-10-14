@@ -197,13 +197,13 @@ const filteredGeneral = computed(() =>
 );
 
 /* General paging */
-const GENERAL_PAGE_SIZE = 6;
-const generalPage = ref(1);
-const generalTotalPages = computed(() => Math.max(1, Math.ceil(filteredGeneral.value.length / GENERAL_PAGE_SIZE)));
-const pagedGeneral = computed(() => {
-  const start = (generalPage.value - 1) * GENERAL_PAGE_SIZE;
-  return filteredGeneral.value.slice(start, start + GENERAL_PAGE_SIZE);
+const GENERAL_PAGE_SIZE = computed(() => {
+  if (vw.value >= 1280) return 12; 
+  if (vw.value >= 1024) return 9;  
+  if (vw.value >= 640)  return 6;  
+  return 4;                        
 });
+const generalPage = ref(1);
 watch(filteredGeneral, () => { generalPage.value = 1; });
 
 /* ---------- init ---------- */
@@ -414,6 +414,7 @@ function onClearAll() {
 </template>
 
 <style scoped>
+/* ===== Shell ===== */
 .dashboard{
   --text:#0f172a;
   --muted:#475569;
@@ -422,39 +423,50 @@ function onClearAll() {
   --blue:#36ade1;
   --blue-600:#1282b3;
 
-  --bg-grad: radial-gradient(1200px 600px at 20% -10%, #CDEBFF 0%, transparent 60%),
-             radial-gradient(900px 500px at 80% 0%, #EAF7FF 0%, transparent 55%),
-             #ffffff;
-
   position: relative;
-  width: min(100%, 1040px);         
+  width: min(100%, 1200px);                      
   margin: 0 auto;
-  padding: 28px 18px 56px;
+  padding: clamp(20px, 3vw, 36px) clamp(12px, 2vw, 24px) clamp(44px, 6vw, 64px);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  background: var(--bg-grad);
+  background: transparent;                  
   overflow: hidden;
 }
 
+.page.page--blue{
+  --bg-grad-strong:
+    radial-gradient(1200px 600px at 20% -10%, #8ad5ff 0%, transparent 60%),
+    radial-gradient(900px 500px at 80% 0%, #aee8ff 0%, transparent 55%),
+    linear-gradient(180deg, #dff5ff 0%, #f8fdff 100%);
+  background: var(--bg-grad-strong);
+  min-height: 100dvh;
+}
+
+/* ===== Hero ===== */
 .dash-hero{
   border-radius: 16px;
   padding: 20px 22px;
   margin: 0 0 14px;
-  background: transparent; 
+  background: transparent;
   border: none;
   box-shadow: none;
 }
-.dash-hero__inner{ max-width: 1040px; margin: 0 auto; }
-.dash-hero h1{ margin:0 0 6px; font-size:32px; font-weight:900; letter-spacing:-.01em; color:#0b4871; }
-.subtitle{ margin:0; color:var(--muted); }
+.dash-hero__inner{ max-width: 1200px; margin: 0 auto; }  
+.dash-hero h1{
+  margin:0 0 6px;
+  font-size: clamp(22px, 2.4vw, 34px);                
+  font-weight:900; letter-spacing:-.01em; color:#0b4871;
+}
+.subtitle{ margin:0; color:var(--muted); font-size: clamp(14px, 1.4vw, 16px); }
 
+/* ===== Pills + Progress ===== */
 .pills{
   position: sticky; top: 10px; z-index: 20; margin-top: 12px;
   display:flex; flex-direction:column; align-items:center; gap: 6px;
 }
 .pills__list{
   display:grid; grid-template-columns: repeat(3, 1fr);
-  gap:10px; max-width:1040px; margin:0 auto; padding:0;
+  gap:10px; max-width:1200px; margin:0 auto; padding:0;   
 }
 .pills__item{
   display:flex; align-items:center; gap:10px;
@@ -476,9 +488,10 @@ function onClearAll() {
 .pills__icon{ font-size: 16px; }
 .pills__label{ font-weight:800; color:#0b4871; }
 
-.pbar{ height: 6px; border-radius: 999px; background: #eef7ff; overflow: hidden; max-width: 1040px; width:100%; margin:0 auto; }
+.pbar{ height: 6px; border-radius: 999px; background: #eef7ff; overflow: hidden; max-width: 1200px; width:100%; margin:0 auto; }
 .pbar__fill{ height: 100%; background: linear-gradient(90deg,#36ade1,#7fd3f3); transition: width .25s ease; }
 
+/* ===== Wizard controls card ===== */
 .wizard-card{
   position:relative; z-index:1;
   background: var(--glass);
@@ -487,10 +500,16 @@ function onClearAll() {
   border-radius:16px;
   box-shadow: 0 12px 32px rgba(6,24,44,.12);
   padding:18px 20px 22px;
-  max-width: 1040px; margin: 14px auto 22px;
+  max-width: 1200px; margin: 14px auto 22px;            
 }
 
-.results h2{ font-size: 20px; margin: 18px 0 12px; font-weight: 900; letter-spacing:-.01em; color:#0b4871; }
+/* ===== Results ===== */
+.results{ max-width: 1200px; margin: 0 auto; }          
+.results h2{
+  font-size: clamp(18px, 1.6vw, 22px);
+  margin: clamp(14px, 2vw, 20px) 0 clamp(8px, 1.4vw, 12px);
+  font-weight: 900; letter-spacing:-.01em; color:#0b4871;
+}
 
 .band{
   background:#fff; border:1px solid #e1edf7; border-radius:16px; padding:14px 16px;
@@ -498,19 +517,16 @@ function onClearAll() {
 }
 .band--full{ grid-column: 1 / -1; }
 .band__head{ display:flex; align-items:center; gap:8px; margin:2px 0 10px; }
-.band__head h3{ margin:0; font-size:16px; font-weight:900; color:#0b4871; }
+.band__head h3{ margin:0; font-size: clamp(15px, 1.4vw, 18px); font-weight:900; color:#0b4871; }
 .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
 .dot.red{ background:#ef4444; } .dot.yellow{ background:#ffd68a; } .dot.green{ background:#8ce3b6; }
 
-.grid-cards{ display:grid; gap: 14px; margin-top: 8px; grid-template-columns: repeat(4, 1fr); }
-.grid-cards > *{
-  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+.grid-cards{
+  display:grid; gap: clamp(12px, 1.6vw, 18px); margin-top: 8px;
+  grid-template-columns: repeat(4, 1fr);
 }
-.grid-cards > *:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(26,108,152,.10);
-}
-
+.grid-cards > *{ transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
+.grid-cards > *:hover{ transform: translateY(-1px); box-shadow: 0 10px 22px rgba(26,108,152,.10); }
 @media (max-width: 1280px){ .grid-cards{ grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 900px){  .grid-cards{ grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px){  .grid-cards{ grid-template-columns: 1fr; } }
@@ -523,7 +539,6 @@ function onClearAll() {
   margin:10px 0 14px; padding:12px; border-radius:12px;
   background:#fff2f2; border:1px solid #ffd6d6; color:#a21414;
 }
-
 .pager{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:18px; }
 .pager-info{ font-size:13px; color:#6b7a86; }
 .pager .btn{
@@ -536,42 +551,28 @@ function onClearAll() {
 .pager .btn:not(:disabled):active{ transform: translateY(1px) scale(.98); }
 .pager .btn:disabled{ opacity:.45; cursor:not-allowed; }
 
+/* ===== Responsive tweaks ===== */
+@media (max-width: 1024px){
+  .dashboard{ width: min(100%, 1040px); }
+}
 @media (max-width: 640px){
   .dashboard{ padding: 20px 12px 44px; }
   .dash-hero h1{ font-size:24px; }
   .subtitle{ font-size:14px; }
 
   .pills{ top:10px; gap:6px; }
-  .pills__list{ grid-template-columns: 1fr; } 
+  .pills__list{ grid-template-columns: 1fr; }
   .pills__item{ padding:10px 12px; }
   .pills__icon{ display:none; }
   .pills__num{ width:24px; height:24px; font-size:12px; }
 
   .wizard-card{ padding: 16px 14px; }
-
   .band{ padding:12px; border-radius:14px; }
-  .band__head h3{ font-size:15px; }
-
   .skeleton, .empty{ padding:12px; font-size:14px; }
-
   .pager{ gap:10px; flex-wrap:wrap; }
   .pager .btn{ min-width: 44%; height: 40px; font-size: 14px; border-radius: 10px; }
-  .pager-info{ width:100%; text-align:center; }
 }
 @media (prefers-reduced-motion: reduce){
   .pills__item, .pager .btn, .grid-cards > * { transition:none !important; }
-}
-
-.page.page--blue{
-  --bg-grad-strong:
-    radial-gradient(1200px 600px at 20% -10%, #8ad5ff 0%, transparent 60%),
-    radial-gradient(900px 500px at 80% 0%, #aee8ff 0%, transparent 55%),
-    linear-gradient(180deg, #dff5ff 0%, #f8fdff 100%);
-  background: var(--bg-grad-strong);
-  min-height: 100dvh;
-}
-
-.dashboard{
-  background: transparent;  
 }
 </style>
