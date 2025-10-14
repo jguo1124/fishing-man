@@ -81,7 +81,10 @@ const props = defineProps({
   display: grid;
   place-items: center;
 
-  background: radial-gradient(120% 120% at 30% 25%, #59d3ff 0%, #08a9ef 55%, #0795d6 100%);
+  background:
+  radial-gradient(1200px 600px at 20% -10%, #6fc8ff 0%, transparent 60%),
+  radial-gradient(900px 500px at 80% 0%, #9addff 0%, transparent 55%),
+  linear-gradient(180deg, #cdefff 0%, #eaf7ff 100%);
   box-shadow:
     0 0 0 8px #fff,            
     0 14px 26px rgba(0,0,0,.12),    
