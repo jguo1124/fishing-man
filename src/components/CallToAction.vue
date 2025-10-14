@@ -55,7 +55,10 @@ const cards = [
 <style scoped>
 .cta {
   text-align: center;
-  background: linear-gradient(to right, #00aaff, #33ccff);
+  background:
+  radial-gradient(1200px 600px at 20% -10%, #3db4f0 0%, transparent 60%),
+  radial-gradient(900px 500px at 80% 0%, #7fd1ff 0%, transparent 55%),
+  linear-gradient(180deg, #b8e6ff 0%, #e6f7ff 100%);
   color: white;
   padding: 40px 20px;
   border-radius: 8px;
