@@ -444,7 +444,7 @@ function onClearAll() {
   border: none;
   box-shadow: none;
 }
-.dash-hero__inner{ max-width: 900px; margin: 0 auto; }
+.dash-hero__inner{ max-width: 1040px; margin: 0 auto; }
 .dash-hero h1{ margin:0 0 6px; font-size:32px; font-weight:900; letter-spacing:-.01em; color:#0b4871; }
 .subtitle{ margin:0; color:var(--muted); }
 
@@ -454,7 +454,7 @@ function onClearAll() {
 }
 .pills__list{
   display:grid; grid-template-columns: repeat(3, 1fr);
-  gap:10px; max-width:900px; margin:0 auto; padding:0;
+  gap:10px; max-width:1040px; margin:0 auto; padding:0;
 }
 .pills__item{
   display:flex; align-items:center; gap:10px;
@@ -476,7 +476,7 @@ function onClearAll() {
 .pills__icon{ font-size: 16px; }
 .pills__label{ font-weight:800; color:#0b4871; }
 
-.pbar{ height: 6px; border-radius: 999px; background: #eef7ff; overflow: hidden; max-width: 900px; width:100%; margin:0 auto; }
+.pbar{ height: 6px; border-radius: 999px; background: #eef7ff; overflow: hidden; max-width: 1040px; width:100%; margin:0 auto; }
 .pbar__fill{ height: 100%; background: linear-gradient(90deg,#36ade1,#7fd3f3); transition: width .25s ease; }
 
 .wizard-card{
@@ -487,7 +487,7 @@ function onClearAll() {
   border-radius:16px;
   box-shadow: 0 12px 32px rgba(6,24,44,.12);
   padding:18px 20px 22px;
-  max-width: 900px; margin: 14px auto 22px;
+  max-width: 1040px; margin: 14px auto 22px;
 }
 
 .results h2{ font-size: 20px; margin: 18px 0 12px; font-weight: 900; letter-spacing:-.01em; color:#0b4871; }
