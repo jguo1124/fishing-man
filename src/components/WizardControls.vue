@@ -1,41 +1,68 @@
 <!-- src/components/WizardControls.vue -->
-<script setup>
-  const props = defineProps({
-    zones: { type: Array, default: () => [] },
-    zone: { type: String, default: "" },
-    onDate: { type: String, default: "" },
-    species: { type: String, default: "" },
-    speciesOptions: { type: Array, default: () => [] },
-    speciesLoading: { type: Boolean, default: false },
-    step: { type: Number, default: 1 },
-    loading: { type: Boolean, default: false },
-    hideNoRestrictions: { type: Boolean, default: false },
-  });
+<script setup lang="ts">
+import { ref, watch, toRefs, computed } from 'vue'
 
-  const emit = defineEmits([
-    "update:zone",
-    "update:onDate",
-    "update:species",
-    "update:hideNoRestrictions",
-    "next",
-    "back",
-    "show",
-    "clear-all"
-  ]);
+const props = defineProps({
+  zones: { type: Array, default: () => [] },
+  zone: { type: String, default: '' },
+  onDate: { type: String, default: '' },
+  species: { type: String, default: '' },
+  speciesOptions: { type: Array, default: () => [] },
+  speciesLoading: { type: Boolean, default: false },
+  step: { type: Number, default: 1 },
+  loading: { type: Boolean, default: false },
+  hideNoRestrictions: { type: Boolean, default: false },
+})
 
-  function handleBack() {
-    emit("back");
-  }
-  function handleNext() {
-    emit("next");
-  }
-  function handleShow() {
-    emit("show");
-  }
-  function handleToggleNoRestriction(e) {
-    emit("update:hideNoRestrictions", e.target.checked);
-  }
-  </script>
+const emit = defineEmits([
+  'update:zone',
+  'update:onDate',
+  'update:species',
+  'update:hideNoRestrictions',
+  'next',
+  'back',
+  'show',
+  'clear-all',
+])
+
+// expose prop fields as reactive refs for template usage without props.*
+const {
+  zones, zone, onDate, species, speciesOptions,
+  speciesLoading, step, loading, hideNoRestrictions
+} = toRefs(props)
+
+// effectiveDate: keep existing value, or provide a safe fallback
+const effectiveDate = computed(() => onDate.value || '')
+
+function handleBack() { emit('back') }
+function handleNext() { emit('next') }
+function handleShow() { emit('show') }
+function handleToggleNoRestriction(e: Event) {
+  const target = e.target as HTMLInputElement
+  emit('update:hideNoRestrictions', target.checked)
+}
+
+// local mirror of the species prop to guarantee reactivity
+const searchText = ref(species.value)
+
+// keep local input in sync if parent overwrites species externally
+watch(species, v => {
+  if (v !== searchText.value) searchText.value = v
+})
+
+// emit on every keystroke so computed filters in parent update immediately
+function onSearchInput(e: Event) {
+  const val = (e.target as HTMLInputElement).value
+  searchText.value = val 
+  emit('update:species', val)
+}
+
+// clear button - also emits so lists reset
+function clearSearch() {
+  searchText.value = ''
+  emit('update:species', '')
+}
+</script>
 
 <template>
   <div class="wizard">
@@ -56,7 +83,7 @@
           :aria-describedby="'help-zone'"
           :value="zone"
           :disabled="loading"
-          @change="e => emit('update:zone', e.target.value)"
+          @change="e => emit('update:zone', (e.target as HTMLInputElement).value)"
         >
           <option value="" disabled>Select a zone</option>
           <option v-for="z in zones" :key="z.code" :value="z.code">
@@ -66,7 +93,7 @@
 
         <div class="actions">
           <button class="btn ghost fake-disabled" @click="handleBack" type="button" aria-disabled="true">Back</button>
-          <button class="btn primary" :disabled="!zone || loading" @click="emit('next')">Next</button>
+          <button class="btn primary" :disabled="!zone || loading" @click="handleNext">Next</button>
         </div>
       </div>
 
@@ -85,7 +112,7 @@
           :aria-describedby="'help-date'"
           :value="effectiveDate"
           :disabled="loading"
-          @change="e => emit('update:onDate', e.target.value)"
+          @change="e => emit('update:onDate', (e.target as HTMLInputElement).value)"
         />
 
         <div class="actions">
@@ -104,22 +131,37 @@
         <!-- Filters row -->
         <div class="filters">
           <div class="col">
-            <label class="label" for="species">Filter by species (optional)</label>
-            <select
-              id="species"
-              class="input"
-              :aria-describedby="'help-species'"
-              :value="species"
-              :disabled="loading || speciesLoading || !speciesOptions.length"
-              @change="e => emit('update:species', e.target.value)"
-            >
-              <option value="">All species</option>
-              <option v-for="s in speciesOptions" :key="s.code" :value="s.code">
+            <label class="label" for="species">Search species (optional)</label>
+
+            <div class="search-wrapper">
+              <input
+                id="species"
+                type="search"
+                class="input"
+                :aria-describedby="'help-species'"
+                v-model="searchText"
+                :disabled="loading || speciesLoading || (step !== 3 && !speciesOptions.length)"
+                placeholder="Type name or code..."
+                list="species-list"
+                @input="onSearchInput"   
+                @search="onSearchInput"  
+              />
+            </div>
+
+            <datalist id="species-list">
+              <option
+                v-for="s in speciesOptions"
+                :key="s.code"
+                :value="s.common_name || s.code"
+              >
                 {{ s.common_name || s.code }} ({{ s.code }})
               </option>
-            </select>
-            <small v-if="speciesLoading" class="muted">Loading species</small>
-            <small v-else-if="!speciesLoading && !speciesOptions.length" class="muted">No species available</small>
+            </datalist>
+
+            <small v-if="speciesLoading" class="muted">Loading species...</small>
+            <small v-else-if="!speciesLoading && !speciesOptions.length" class="muted">
+              No species available
+            </small>
           </div>
 
           <div class="col toggle">

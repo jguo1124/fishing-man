@@ -110,7 +110,7 @@ const stepPills = computed(() => ([
 /* ---------- adapters (map API row  RegCard item) ---------- */
 function toRegCardItem(sp, zoneCode, onDateStr) {
   return {
-    species: { code: sp.species, common_name: sp.species },
+    species: { code: sp.species, common_name: sp.common_name || sp.species },
     zone: { code: zoneCode },
     rule: {
       min_cm: sp.min_size_cm ?? null,
@@ -163,7 +163,7 @@ const FALLBACK_IMG = "https://www.eftta.com/fileadmin/user_upload/FISHPROTECT_wh
 const endangeredImageItems = computed(() =>
   (groups.value?.endangered || []).map(sp => ({
     species_code: sp.species,
-    common_name: sp.species,
+    common_name: sp.common_name || sp.species,
     scientific_name: sp.scientific_name || "",
     conservation_status: sp.endangered_status || "ENDANGERED",
     distribution: sp.distribution || "",
@@ -186,15 +186,48 @@ const invasiveImageItems = computed(() =>
 );
 
 /* Filters for each bucket */
-const filteredEndangered = computed(() =>
-  species.value ? endangeredImageItems.value.filter(s => s.species_code === species.value) : endangeredImageItems.value
-);
-const filteredInvasiveImg = computed(() =>
-  species.value ? invasiveImageItems.value.filter(s => s.species_code === species.value) : invasiveImageItems.value
-);
-const filteredGeneral = computed(() =>
-  species.value ? cardsGeneral.value.filter(it => it.species.code === species.value) : cardsGeneral.value
-);
+const filteredEndangered = computed(() => {
+  const q = species.value
+  const all = endangeredImageItems.value
+  if (!q) return all
+  return all.filter(s => {
+    return fuzzyMatch(
+      q,
+      s.species_code,    
+      s.common_name,    
+      s.scientific_name, 
+      s.conservation_status 
+    )
+  })
+})
+
+const filteredInvasiveImg = computed(() => {
+  const q = species.value
+  const all = invasiveImageItems.value
+  if (!q) return all
+  return all.filter(s => {
+    return fuzzyMatch(
+      q,
+      s.species_code,
+      s.common_name,
+      s.scientific_name,
+      s.conservation_status
+    )
+  })
+})
+
+const filteredGeneral = computed(() => {
+  const q = species.value
+  const all = cardsGeneral.value
+  if (!q) return all
+  return all.filter(it => {
+    return fuzzyMatch(
+      q,
+      it.species?.code,                     
+      it.species?.common_name || it.species?.code 
+    )
+  })
+})
 
 /* General paging */
 const GENERAL_PAGE_SIZE = computed(() => {
@@ -204,7 +237,6 @@ const GENERAL_PAGE_SIZE = computed(() => {
   return 4;                        
 });
 const generalPage = ref(1);
-watch(filteredGeneral, () => { generalPage.value = 1; });
 
 /* ---------- init ---------- */
 onMounted(loadZones);
@@ -242,6 +274,39 @@ function onClearAll() {
   species.value = "";
   groups.value = null;
   step.value = 1;
+}
+
+// ADD: viewport width ref + listener
+const vw = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+if (typeof window !== 'undefined') {
+  const onResize = () => { vw.value = window.innerWidth }
+  window.addEventListener('resize', onResize)
+}
+
+const generalTotalPages = computed(() => {
+  const total = filteredGeneral.value.length
+  return Math.max(1, Math.ceil(total / GENERAL_PAGE_SIZE.value))
+})
+
+const pagedGeneral = computed(() => {
+  const start = (generalPage.value - 1) * GENERAL_PAGE_SIZE.value
+  return filteredGeneral.value.slice(start, start + GENERAL_PAGE_SIZE.value)
+})
+
+watch(filteredGeneral, () => { generalPage.value = 1 })
+
+watch([GENERAL_PAGE_SIZE, filteredGeneral], () => {
+  if (generalPage.value > generalTotalPages.value) {
+    generalPage.value = generalTotalPages.value
+  }
+})
+
+const norm = (s) => String(s ?? '').toLowerCase()
+
+function fuzzyMatch(q, ...fields) {
+  const needle = norm(q)
+  if (!needle) return true        
+  return fields.some(f => norm(f).includes(needle))
 }
 </script>
 
