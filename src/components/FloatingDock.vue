@@ -99,20 +99,21 @@ const iconName = computed(() => {
 /* Toggle button */
 .dock-toggle{
   position: fixed;
-  right: 12px; top: 40%;
+  right: 18px; top: 82%;
   z-index: 1100;
-  min-width: 84px; height: 44px;
+  width: 55px;                 /* make it a circle */
+  height: 55px;
+  border-radius: 50%;
   padding: 0 12px;
-  border-radius: 22px;
   border: 1px solid rgba(0,0,0,.12);
-  background: #fff;
+  background: linear-gradient(180deg, #3cd2ff 0%, #2aa9f2 60%, #0795d6 100%);
   box-shadow: 0 6px 16px rgba(0,0,0,.16);
   font-size: 15px; font-weight: 600; cursor: pointer;
 
   display: inline-flex; align-items: center; justify-content: center;
 }
 .toggle-content{ display: inline-flex; align-items: center; gap: 6px; }
-.icon{ width: 20px; height: 20px; color: #475569; }
+.icon{ width: 20px; height: 20px; color: #fff; }
 .temp-text{ color: #111827; }
 
 /* Sliding dock */
@@ -143,8 +144,8 @@ const iconName = computed(() => {
 
 /* Mobile behavior */
 @media (max-width: 768px){
-  .dock-toggle{ bottom: calc(env(safe-area-inset-bottom, 0px) + 50px);
-    top: auto; }
+  .dock-toggle{ bottom: calc(env(safe-area-inset-bottom, 0px) + 65px);
+    top: auto; right: clamp(12px, 2vw, 12px);}
   .dock{
     right: 0; left: 0; margin: 0 auto; bottom: 0; top: auto;
     width: 100%; max-height: 80vh; border-radius: 14px 14px 0 0;
