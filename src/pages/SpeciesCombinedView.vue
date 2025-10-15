@@ -124,6 +124,12 @@ function toRegCardItem(sp, zoneCode, onDateStr) {
     _source: sp.source,
     _area: sp.area,
     _onDate: onDateStr,
+    _keywords: [
+      sp.species,                 
+      sp.common_name,             
+      sp.scientific_name,         
+      sp.endangered_status       
+    ].filter(Boolean).join(' | ')
   };
 }
 
@@ -224,7 +230,8 @@ const filteredGeneral = computed(() => {
     return fuzzyMatch(
       q,
       it.species?.code,                     
-      it.species?.common_name || it.species?.code 
+      it.species?.common_name || it.species?.code ,
+      it._keywords
     )
   })
 })
@@ -239,7 +246,11 @@ const GENERAL_PAGE_SIZE = computed(() => {
 const generalPage = ref(1);
 
 /* ---------- init ---------- */
-onMounted(loadZones);
+onMounted(() => {
+  loadZones();
+  window.groups = groups;  
+  console.log("groups loading on window, input groups.value on console to inspect");
+});
 
 /* ---------- nav handlers ---------- */
 function onBack() {
@@ -343,11 +354,11 @@ function fuzzyMatch(q, ...fields) {
       <div class="wizard-card">
         <WizardControls
           :zones="zones"
-          :zone="zone"
-          :onDate="onDate"
+          v-model:zone="zone"
+          v-model:onDate="onDate"
+          v-model:species="species"
           :step="step"
           :loading="loading"
-          :species="species"
           :speciesOptions="speciesOptions"
           :speciesLoading="speciesLoading"
           :key="step"

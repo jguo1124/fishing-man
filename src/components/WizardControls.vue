@@ -57,10 +57,12 @@ function onSearchInput(e: Event) {
   emit('update:species', val)
 }
 
+const speciesInput = ref<HTMLInputElement | null>(null)
 // clear button - also emits so lists reset
 function clearSearch() {
   searchText.value = ''
   emit('update:species', '')
+  speciesInput.value?.focus()
 }
 </script>
 
@@ -144,8 +146,19 @@ function clearSearch() {
                 placeholder="Type name or code..."
                 list="species-list"
                 @input="onSearchInput"   
-                @search="onSearchInput"  
+                @search="onSearchInput" 
+                ref="speciesInput"   
               />
+              <button
+                v-if="searchText"
+                class="clear-btn"
+                type="button"
+                aria-label="Clear search"
+                title="Clear"
+                @click="clearSearch"
+              >
+                ×
+              </button>
             </div>
 
             <datalist id="species-list">
@@ -263,4 +276,51 @@ function clearSearch() {
 .fake-disabled {
   opacity: .6; cursor: not-allowed;
 } 
+
+
+.search-wrapper {
+  position: relative;         
+  display: inline-block;       
+  width: 100%;             
+}
+
+.search-wrapper .input {
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  padding-right: 2.4rem;      
+  box-sizing: border-box;    
+}
+/* Hide default clear button in some browsers */
+.search-wrapper .input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+
+.clear-btn {
+  position: absolute;
+  right: 10px;                 
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.clear-btn:hover {
+  color: #0ea5e9;
+  background: rgba(14,165,233,.08);
+}
 </style>
