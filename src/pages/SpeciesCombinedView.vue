@@ -484,6 +484,19 @@ function fuzzyMatch(q, ...fields) {
         <div v-else-if="!loading && step >= 3 && !groups" class="empty">
           No regulations found for {{ zone }} on {{ onDate || "-" }}.
         </div>
+        <hr class="sep" />
+        <footer class="legal-note" aria-label="Regulation source notice">
+          <span class="info-badge" aria-hidden="true">ℹ</span>
+          <span>
+            Regulations displayed here are retrieved from Victorian Consolidated Regulations,
+            which can be found
+            <a
+              href="https://classic.austlii.edu.au/au/legis/vic/consol_reg/fr2019219/sch22.html"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+            >here</a>.
+          </span>
+        </footer>
       </div>
     </section>
   </main>
@@ -651,4 +664,46 @@ function fuzzyMatch(q, ...fields) {
 @media (prefers-reduced-motion: reduce){
   .pills__item, .pager .btn, .grid-cards > * { transition:none !important; }
 }
+
+.sep{
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #dbe8f5, transparent);
+  margin: 18px 0 10px;
+}
+
+.legal-note{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e1edf7;
+  background: linear-gradient(180deg,#ffffff,#f8fcff);
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.info-badge{
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e6f6ff;
+  border: 1px solid #bfe6ff;
+  font-size: 14px;
+  color: #0b4871;
+  margin-top: 2px;
+}
+
+.legal-note a{
+  color: var(--blue-600, #1282b3);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+.legal-note a:hover{ text-decoration: underline; }
 </style>

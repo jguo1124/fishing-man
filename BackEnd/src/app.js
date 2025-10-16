@@ -11,7 +11,7 @@ import zoneRouter from "./routes/zone.js";
 // Epic 2 routers
 import protectedRouter from "./Endangered_species/routes.js";
 
-
+import listEndpoints from "express-list-endpoints";
 import weatherRouter from "./routes/weather.js";
 
 import { getPool } from "./services/repo/mysqlPool.js";
