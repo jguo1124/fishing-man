@@ -85,22 +85,22 @@
 
       <div class="grid cards-4">
         <div class="card">
-          <div class="icon" aria-hidden="true">📏</div>
+          <div class="icon" aria-hidden="true"></div>
           <h3>Size limits</h3>
           <p>Show legal size ranges for each species to prevent overharvest.</p>
         </div>
         <div class="card">
-          <div class="icon" aria-hidden="true">📊</div>
+          <div class="icon" aria-hidden="true"></div>
           <h3>Catch quotas</h3>
           <p>Daily and seasonal quotas explained clearly for every zone.</p>
         </div>
         <div class="card">
-          <div class="icon" aria-hidden="true">🗓️</div>
+          <div class="icon" aria-hidden="true"></div>
           <h3>Seasonal closures</h3>
           <p>Highlight when and where fishing is closed to allow stock recovery.</p>
         </div>
         <div class="card">
-          <div class="icon" aria-hidden="true">🗺️</div>
+          <div class="icon" aria-hidden="true"></div>
           <h3>Zones</h3>
           <p>Interactive maps of fishing zones with rules relevant to each area.</p>
         </div>

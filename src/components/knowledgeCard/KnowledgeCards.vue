@@ -18,12 +18,25 @@
 
 <script setup>
 import { computed } from 'vue'
+
 const props = defineProps({ item: { type: Object, required: true } })
+
 const displayDate = computed(() => {
-  const dt = props.item?.published_at || props.item?.created_at
-  if (!dt) return ''
-  const d = new Date(dt)
-  return isNaN(d.getTime()) ? '' : d.toLocaleDateString()
+  const raw = props.item?.published_at || props.item?.created_at
+  if (!raw) return ''
+
+  
+  if (typeof raw === 'number' || (typeof raw === 'string' && /^\d{4}$/.test(raw))) {
+    return String(raw) 
+  }
+
+  
+  const norm = typeof raw === 'string' && raw.includes(' ')
+    ? raw.replace(' ', 'T')
+    : raw
+
+  const d = new Date(norm)
+  return isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString()
 })
 </script>
 

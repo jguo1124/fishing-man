@@ -1,17 +1,23 @@
 <template>
   <div id="app">
+    <!-- Header + Nav -->
     <HeaderBrand />
     <NavBar />
+
+    <!-- Routed pages -->
     <router-view />
+
+    <!-- Floating quick actions -->
     <FloatingDock title="Quick Tools" />
-    <footer class="footer">
-      <p class="copyright">© GOFish Sustainably. All rights reserved</p>
-    </footer>
+
+    <!-- Modern ocean-themed footer -->
+    <SiteFooter />
   </div>
 
+  <!-- First-time guide prompt -->
   <GuidePrompt v-if="showPrompt" @start="startTour" @dismiss="dismissPrompt" />
 
-  <!-- 展开态 or 收起小图标态：都渲染 TourOverlay -->
+  <!-- Product tour overlay -->
   <TourOverlay
     v-if="showTour || showTourFab"
     :key="stepsKey"
@@ -22,18 +28,25 @@
 </template>
 
 <script setup lang="ts">
-import HeaderBrand from '@/components/HeaderBrand.vue'
-import NavBar from '@/components/NavBar.vue'
-import FloatingDock from '@/components/FloatingDock.vue'
-import GuidePrompt from '@/components/GuidePrompt.vue'
-import TourOverlay from '@/components/TourOverlay.vue'
+/* Core layout components */
+import HeaderBrand from './components/HeaderBrand.vue'
+import NavBar from './components/NavBar.vue'
+import FloatingDock from './components/FloatingDock.vue'
+import SiteFooter from './components/SiteFooter.vue'
+
+/* Guided tour components */
+import GuidePrompt from './components/GuidePrompt.vue'
+import TourOverlay from './components/TourOverlay.vue'
+
 import { ref, onMounted } from 'vue'
 
+/* Tour state */
 const showPrompt   = ref(false)
-const showTour     = ref(false)  // 展开气泡
-const showTourFab  = ref(false)  // 右下角小图标
-const stepsKey     = ref(0)      // 用于强制重置 Tour（可选）
+const showTour     = ref(false)
+const showTourFab  = ref(false)
+const stepsKey     = ref(0)
 
+/* Tour steps mapping to UI selectors */
 const tourSteps = [
   { selector: '#app-nav', title: 'Navigation', content: 'Main navigation at the top.', offset: -100, nudgeX: -500 },
   { selector: '[data-tour="nav-home"]',      title: 'Home',          content: 'Click here to view the homepage.', offset: -100 },
@@ -43,34 +56,33 @@ const tourSteps = [
   { route: { name: 'Home' }, selector: '[data-tour="home-hero"]', title: 'Enjoy your trip!', content: 'You are now ready to explore GOFish. Tight lines and fish responsibly!', noSpotlight: true }
 ]
 
-// “开始引导”：展开显示气泡（不收起）
+/* Tour handlers */
 function startTour() {
   showPrompt.value  = false
   showTourFab.value = false
   showTour.value    = true
-  // 如需每次重新从第一步开始，可重置 key：
   stepsKey.value++
 }
-
-// “No thanks / 稍后再说”：直接以小图标收起
 function dismissPrompt() {
   showPrompt.value  = false
   showTour.value    = false
   showTourFab.value = true
 }
-
-// 组件内部触发 close（比如点击×彻底关闭）：
 function onTourClose() {
   showTour.value    = false
   showTourFab.value = false
 }
 
+/* Show the guide prompt on first mount */
 onMounted(() => { showPrompt.value = true })
 </script>
 
 <style>
+/* App layout scaffold */
 #app{ display:flex; flex-direction:column; min-height:100vh; }
+
+/* Keep nav sticky to top */
 nav.nav{ position:sticky; top:0; z-index:1000; }
-.footer{ background:#f9f9f9; padding:16px 20px; }
-.footer .copyright{ text-align:center; font-size:14px; color:#888; }
+
+/* Remove old simple footer styles (now replaced by <SiteFooter/>) */
 </style>

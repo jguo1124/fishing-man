@@ -32,7 +32,7 @@
         <!-- Controls -->
         <div class="kh-wrap">
           <div class="kh-search" role="search">
-            <span class="ico" aria-hidden="true">🔎</span>
+            <span class="ico" aria-hidden="true"></span>
             <input
               v-model.trim="q"
               type="search"
