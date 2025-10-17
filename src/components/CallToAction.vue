@@ -10,7 +10,7 @@
     <!-- header -->
     <header class="cta-head">
       <p class="eyebrow">Built for responsible fishing</p>
-      <h2 id="cta-title" class="cta-title">{{ title }}</h2>
+      <h2 id="cta-title">{{ title }}</h2>
       <p class="sub">
         Real-time rules, species awareness, and sustainability tips—designed to keep your trip safe and compliant.
       </p>
@@ -170,10 +170,12 @@ const cardDelayStyle = (i) => ({
   padding: 6px 10px;
   margin-bottom: 10px;
 }
-.cta-title {
+.cta h2 {
   font-weight: 900;
   margin: 4px 0 6px;
   font-size: clamp(22px, 2.4vw, 28px);
+}
+.card-title{
   color: #000000;
 }
 .sub {
